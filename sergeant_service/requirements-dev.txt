@@ -1,0 +1,2 @@
+pydevd-pycharm
+mypy

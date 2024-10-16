@@ -1,16 +1,18 @@
-import asyncio
 import json
-import logging
 import time
 import uuid
 from typing import Optional, List, Dict, AsyncGenerator
-from venv import logger
 
 from fastapi import FastAPI, HTTPException
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import BaseMessage
+from langchain_openai.chat_models.base import BaseChatOpenAI
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
+import common
+from llm import LLMEnum, LLM
+
+start_up_time: int = int(time.time())
 app = FastAPI(title="LangChain-OpenAI Chat API")
 
 
@@ -27,7 +29,7 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
 
 
-async def stream_response(llm: ChatOpenAI, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
+async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
     async for chunk in llm.astream(messages):
         token = chunk.content
         if token:
@@ -43,19 +45,16 @@ async def stream_response(llm: ChatOpenAI, messages: List[Dict], request: ChatCo
 
 @app.post("/chat/completions", response_model=None)
 async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
-    llm = ChatOpenAI(
-        temperature=request.temperature,
-        max_tokens=request.max_tokens,
-        model_name="gpt-4o-mini"
-    )
-
-    messages = [{"role": m.role, "content": m.content} for m in request.messages]
+    messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
+    llm: LLM = next(filter(lambda l: l.value.name == request.model, list(LLMEnum))).value
+    llm.model.temperature = request.temperature  # type:ignore[assignment]
+    llm.model.max_tokens = request.max_tokens
 
     try:
         if request.stream:
-            return StreamingResponse(stream_response(llm, messages, request), media_type="text/event-stream")
+            return StreamingResponse(stream_response(llm.model, messages, request), media_type="text/event-stream")
 
-        response = await llm.ainvoke(messages)
+        response: BaseMessage = await llm.model.ainvoke(messages)
         return {
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
@@ -72,18 +71,16 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
 async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
     return {
         "object": "list",
-        "data": [
-            {
-                "id": "GPT-4o Mini",
-                "object": "model",
-                "created": 1686935002,
-                "owned_by": "kavindu"
-            }
-        ]
+        "data": [{"id": llm.value.name, "object": "model", "created": start_up_time, "owned_by": "N/A"} for llm in list(LLMEnum)]
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
+    if common.is_test_environment():
+        import pydevd_pycharm
+
+        pydevd_pycharm.settrace("host.docker.internal", port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
