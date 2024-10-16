@@ -1,0 +1,9 @@
+langchain
+langchain-openai
+openai
+requests
+uvicorn
+pydantic
+starlette
+fastapi
+aiohttp
