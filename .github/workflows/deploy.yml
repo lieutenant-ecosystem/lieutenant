@@ -1,0 +1,48 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Set Docker Tag
+        id: docker_tag
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" == "refs/heads/beta" ]; then
+            echo "TAG=beta" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            echo "TAG=dev" >> $GITHUB_ENV
+          else
+            echo "TAG=unknown" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Open WebUI
+        run: |
+          cd open_webui
+          docker build -t ghcr.io/${{ github.repository_owner }}/open-webui:${{ env.TAG }} .
+          docker push ghcr.io/${{ github.repository_owner }}/open-webui:${{ env.TAG }}
+
+      - name: Build and Push Sergeant Service
+        run: |
+          cd sergeant_service
+          docker build -t ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }} .
+          docker push ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }}
