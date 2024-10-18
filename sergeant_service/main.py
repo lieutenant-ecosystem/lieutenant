@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
 import common
-from llm import LLMEnum, LLM
+from sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
 app = FastAPI(title="LangChain-OpenAI Chat API")
@@ -46,15 +46,16 @@ async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: Ch
 @app.post("/chat/completions", response_model=None)
 async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
     messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
-    llm: LLM = next(filter(lambda l: l.value.name == request.model, list(LLMEnum))).value
-    llm.model.temperature = request.temperature  # type:ignore[assignment]
-    llm.model.max_tokens = request.max_tokens
+    llm: LLM = next(filter(lambda l: l.value == request.model, list(LLM)))
+    sergeant: Sergeant = Sergeant.get(llm)
+    sergeant.model.temperature = request.temperature
+    sergeant.model.max_tokens = request.max_tokens
 
     try:
         if request.stream:
-            return StreamingResponse(stream_response(llm.model, messages, request), media_type="text/event-stream")
+            return StreamingResponse(stream_response(sergeant.model, messages, request), media_type="text/event-stream")
 
-        response: BaseMessage = await llm.model.ainvoke(messages)
+        response: BaseMessage = await sergeant.model.ainvoke(messages)
         return {
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
@@ -71,7 +72,7 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
 async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
     return {
         "object": "list",
-        "data": [{"id": llm.value.name, "object": "model", "created": start_up_time, "owned_by": "N/A"} for llm in list(LLMEnum)]
+        "data": [{"id": sergeant.llm.value, "object": "model", "created": start_up_time, "owned_by": "N/A"} for sergeant in Sergeant.get_all()]
     }
 
 
