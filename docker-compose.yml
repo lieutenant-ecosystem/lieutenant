@@ -20,6 +20,7 @@ services:
       - RAG_OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_API_BASE_URL=http://sergeant_service:8000
       - DATABASE_URL=postgresql://openwebui:unsecuredpassword@relational_database:5432/openwebui
+      - ENV=dev
 
   relational_database:
     image: postgres:latest
@@ -43,10 +44,10 @@ services:
     build:
       context: gateway
       dockerfile: Dockerfile
-    environment:
-      - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-      - SSH_USERNAME=${SSH_USERNAME}
-      - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
+      args:
+        - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+        - SSH_USERNAME=${SSH_USERNAME}
+        - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
 
 
 volumes:
