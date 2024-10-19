@@ -11,6 +11,7 @@ chmod 700 "/home/$SSH_USERNAME/.ssh"
 chmod 600 "/home/$SSH_USERNAME/.ssh/authorized_keys"
 
 # Install Cloudflared Service
+cloudflared service uninstall || true
 cloudflared service install "$CLOUDFLARE_TUNNEL_TOKEN"
 
 mkdir -p /run/sshd
