@@ -3,17 +3,31 @@ import time
 import uuid
 from typing import Optional, List, Dict, AsyncGenerator
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBearer
 from langchain_core.messages import BaseMessage
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from pydantic import BaseModel, Field
+from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 import common
 from sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
-app = FastAPI(title="LangChain-OpenAI Chat API")
+app = FastAPI(title="Lieutenant API")
+
+
+class AuthenticateToken(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super(AuthenticateToken, self).__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> None:
+        jwt_token: str = request.headers["Authorization"]
+
+        # TODO: Review if this is tunnel business is really secure
+        if common.is_from_tunnel(request) and (jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
+            raise HTTPException(status_code=401, detail="Invalid token.")
 
 
 class Message(BaseModel):
@@ -43,7 +57,7 @@ async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: Ch
     yield "data: [DONE]\n\n"
 
 
-@app.post("/chat/completions", response_model=None)
+@app.post("/chat/completions", dependencies=[Depends(AuthenticateToken())], response_model=None)
 async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
     messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
     llm: LLM = next(filter(lambda l: l.value == request.model, list(LLM)))
