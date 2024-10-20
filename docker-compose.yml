@@ -43,6 +43,10 @@ services:
 
   gateway:
     image: ghcr.io/lieutenant-ecosystem/gateway:${ENVIRONMENT}
+    environment:
+      - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+      - SSH_USERNAME=${SSH_USERNAME}
+      - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
     networks:
       - lieutenant-intranet
 
