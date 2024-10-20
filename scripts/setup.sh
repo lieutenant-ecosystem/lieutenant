@@ -23,7 +23,6 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 sudo chown $USER:$USER $ENV_FILE
 sudo chown :docker $ENV_FILE
 sudo chmod 640 $ENV_FILE
-sudo chmod 644 $ENV_FILE
 sudo chmod 755 $HOME
 
 # Start the Lieutenant
