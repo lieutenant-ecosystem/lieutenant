@@ -16,10 +16,10 @@ else
 fi
 
 echo "Stopping the Cloudflare Tunnel"
-cloudflared service uninstall || true
+cloudflared service uninstall > /dev/null 2>&1 || true
 
 echo "Starting the Cloudflare Tunnel"
 cloudflared service install "$CLOUDFLARE_TUNNEL_TOKEN"
 echo "Cloudflare Tunnel started successfully"
 
-/usr/sbin/sshd -D
+tail -f /var/log/cloudflared.log
