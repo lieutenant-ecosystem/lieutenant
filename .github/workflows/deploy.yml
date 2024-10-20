@@ -46,3 +46,9 @@ jobs:
           cd sergeant_service
           docker build -t ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }} .
           docker push ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }}
+
+      - name: Build and Push Gateway
+        run: |
+          cd gateway
+          docker build -t ghcr.io/${{ github.repository_owner }}/gateway:${{ env.TAG }} .
+          docker push ghcr.io/${{ github.repository_owner }}/gateway:${{ env.TAG }}

@@ -2,7 +2,9 @@ version: '3.8'
 services:
 
   open_webui:
-    image: ghcr.io/lieutenant-ecosystem/open-webui:${ENVIRONMENT}
+    build:
+      context: open_webui
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "8080:8080"
@@ -34,7 +36,9 @@ services:
       - lieutenant-intranet
 
   sergeant_service:
-    image: ghcr.io/lieutenant-ecosystem/sergeant-service:${ENVIRONMENT}
+    build:
+      context: sergeant_service
+      dockerfile: Dockerfile
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -42,7 +46,13 @@ services:
       - lieutenant-intranet
 
   gateway:
-    image: ghcr.io/lieutenant-ecosystem/gateway:${ENVIRONMENT}
+    build:
+      context: gateway
+      dockerfile: Dockerfile
+    environment:
+      - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+      - SSH_USERNAME=${SSH_USERNAME}
+      - SSH_PUBLIC_KEY=${SSH_PUBLIC_KEY}
     networks:
       - lieutenant-intranet
 

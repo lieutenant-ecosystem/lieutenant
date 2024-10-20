@@ -12,4 +12,6 @@ RUN chmod +x /setup.sh
 RUN /setup.sh
 RUN rm /setup.sh
 
-CMD ["/bin/bash", "-c", "service cloudflared start && /usr/sbin/sshd -D"]
+COPY startup.sh /startup.sh
+RUN chmod +x /startup.sh
+CMD ["/bin/bash", "/startup.sh"]
