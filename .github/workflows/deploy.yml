@@ -25,7 +25,7 @@ jobs:
       - name: Set Docker Tag
         id: docker_tag
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/production" ]; then
             echo "TAG=latest" >> $GITHUB_ENV
           elif [ "${{ github.ref }}" == "refs/heads/beta" ]; then
             echo "TAG=beta" >> $GITHUB_ENV
