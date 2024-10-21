@@ -4,6 +4,10 @@
 apt update
 apt install -y openssh-server adduser curl
 
+# Create the privilege separation directory
+mkdir -p /run/sshd
+chmod 755 /run/sshd
+
 # Configure SSH (generate host keys and modify sshd_config)
 ssh-keygen -A
 sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config

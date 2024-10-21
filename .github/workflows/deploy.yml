@@ -25,7 +25,7 @@ jobs:
       - name: Set Docker Tag
         id: docker_tag
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/production" ]; then
             echo "TAG=latest" >> $GITHUB_ENV
           elif [ "${{ github.ref }}" == "refs/heads/beta" ]; then
             echo "TAG=beta" >> $GITHUB_ENV
@@ -46,3 +46,9 @@ jobs:
           cd sergeant_service
           docker build -t ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }} .
           docker push ghcr.io/${{ github.repository_owner }}/sergeant-service:${{ env.TAG }}
+
+      - name: Build and Push Gateway
+        run: |
+          cd gateway
+          docker build -t ghcr.io/${{ github.repository_owner }}/gateway:${{ env.TAG }} .
+          docker push ghcr.io/${{ github.repository_owner }}/gateway:${{ env.TAG }}
