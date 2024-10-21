@@ -5,14 +5,14 @@ from typing import Optional, List, Dict, AsyncGenerator
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
-from langchain_openai.chat_models.base import BaseChatOpenAI
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-from src import common
-from src.sergeant import LLM, Sergeant
+import common
+from sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
 app = FastAPI(title="Lieutenant API")
@@ -43,7 +43,7 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
 
 
-async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
+async def stream_response(llm: BaseChatModel, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
     async for chunk in llm.astream(messages):
         token = chunk.content
         if token:
