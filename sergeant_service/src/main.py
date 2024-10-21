@@ -11,8 +11,8 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-import common
-from sergeant import LLM, Sergeant
+from src import common
+from src.sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
 app = FastAPI(title="Lieutenant API")
@@ -23,7 +23,7 @@ class AuthenticateToken(HTTPBearer):
         super(AuthenticateToken, self).__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request) -> None:
-        jwt_token: str = request.headers["Authorization"]
+        jwt_token: str = request.headers.get("Authorization")
 
         # TODO: Review if this is tunnel business is really secure
         if common.is_from_tunnel(request) and (jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
@@ -36,7 +36,7 @@ class Message(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: str
+    model: LLM
     messages: List[Message]
     max_tokens: Optional[int] = Field(default=4096, le=8192)
     temperature: Optional[float] = Field(default=0.2, ge=0, le=2)
@@ -51,7 +51,7 @@ async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: Ch
                 'id': str(uuid.uuid4()),
                 'object': 'chat.completion.chunk',
                 'created': int(time.time()),
-                'model': request.model,
+                'model': request.model.value,
                 'choices': [{'delta': {'content': token}}],
             })}\n\n"
     yield "data: [DONE]\n\n"
@@ -60,7 +60,7 @@ async def stream_response(llm: BaseChatOpenAI, messages: List[Dict], request: Ch
 @app.post("/chat/completions", dependencies=[Depends(AuthenticateToken())], response_model=None)
 async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
     messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
-    llm: LLM = next(filter(lambda l: l.value == request.model, list(LLM)))
+    llm: LLM = next(filter(lambda l: l == request.model, list(LLM)))
     sergeant: Sergeant = Sergeant.get(llm)
     sergeant.model.temperature = request.temperature
     sergeant.model.max_tokens = request.max_tokens
@@ -74,7 +74,7 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": request.model,
+            "model": request.model.value,
             "choices": [{"message": {"role": "assistant", "content": response.content}}],
         }
 

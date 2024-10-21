@@ -6,7 +6,7 @@ import yaml
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from pydantic import BaseModel
 
-from common import Constants
+from src.common import Constants
 
 
 class LLM(Enum):
