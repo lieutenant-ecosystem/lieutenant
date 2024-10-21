@@ -4,8 +4,8 @@
 - name: "GPT-4o"
   id: "chatgpt-4o-latest"
 
-- name: "o1 Preview"
-  id: "o1-preview"
+#- name: "o1 Preview"
+#  id: "o1-preview"
 
-- name: "o1 Mini"
-  id: "o1-mini"
+#- name: "o1 Mini"
+#  id: "o1-mini"
