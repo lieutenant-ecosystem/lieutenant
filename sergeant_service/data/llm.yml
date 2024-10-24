@@ -17,3 +17,19 @@
 - name: "Claude 3.5 Sonnet"
   id: "claude-3-5-sonnet-20240620"
   compatibility: "Anthropic"
+
+- name: "Llama 3.1 Sonar 8B"
+  id: "llama-3.1-sonar-small-128k-chat"
+  compatibility: "Perplexity"
+
+- name: "Llama 3.1 Sonar 70B"
+  id: "llama-3.1-sonar-large-128k-chat"
+  compatibility: "Perplexity"
+
+- name: "Llama 3.1 8B"
+  id: "llama-3.1-8b-instruct"
+  compatibility: "Perplexity"
+
+- name: "Llama 3.1 70B"
+  id: "llama-3.1-70b-instruct"
+  compatibility: "Perplexity"

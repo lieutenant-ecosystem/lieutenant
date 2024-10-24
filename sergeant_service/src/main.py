@@ -11,8 +11,8 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-import common
-from sergeant import LLM, Sergeant
+from src import common
+from src.sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
 app = FastAPI(title="Lieutenant API")

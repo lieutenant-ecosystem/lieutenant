@@ -4,11 +4,12 @@ from typing import List, Dict, Any, Optional
 
 import yaml
 from langchain_anthropic import ChatAnthropic
+from langchain_community.chat_models import ChatPerplexity
 from langchain_core.language_models import BaseChatModel
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from pydantic import BaseModel
 
-from common import Constants
+from src.common import Constants
 
 
 class LLM(Enum):
@@ -17,11 +18,16 @@ class LLM(Enum):
     O1_PREVIEW: str = "o1 Preview"
     O1_MINI: str = "o1 Mini"
     CLAUDE_35_SONNET: str = "Claude 3.5 Sonnet"
+    LLAMA_31_SONAR_8B: str = "Llama 3.1 Sonar 8B"
+    LLAMA_31_SONAR_70B: str = "Llama 3.1 Sonar 70B"
+    LLAMA_31_8B: str = "Llama 3.1 8B"
+    LLAMA_31_70B: str = "Llama 3.1 70B"
 
 
 class LLMCompatibility(Enum):
     OPEN_AI: str = "OpenAI"
     ANTHROPIC: str = "Anthropic"
+    PERPLEXITY: str = "Perplexity"
 
 
 class LLMConfig(BaseModel):
@@ -49,7 +55,13 @@ class Sergeant(BaseModel):
     def get_all() -> List["Sergeant"]:
         sergeant_list: List[Sergeant] = []
         for llm_config in LLMConfig.get_all():
-            model_class: type = BaseChatOpenAI if llm_config.compatibility == LLMCompatibility.OPEN_AI else ChatAnthropic
+            if llm_config.compatibility == LLMCompatibility.OPEN_AI:
+                model_class: type = BaseChatOpenAI
+            elif llm_config.compatibility == LLMCompatibility.ANTHROPIC:
+                model_class: type = ChatAnthropic
+            else:
+                model_class: type = ChatPerplexity
+
             llm: LLM = next(filter(lambda l: l.value == llm_config.name, list(LLM)))
 
             sergeant_list.append(Sergeant(

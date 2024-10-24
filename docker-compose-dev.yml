@@ -43,6 +43,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PPLX_API_KEY=${PPLX_API_KEY}
     networks:
       - lieutenant-intranet
 

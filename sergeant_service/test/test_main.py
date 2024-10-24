@@ -3,8 +3,9 @@ from typing import List
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
-from main import app, Message, ChatCompletionRequest
-from sergeant import LLM
+
+from src.main import app, Message, ChatCompletionRequest
+from src.sergeant import LLM
 
 client = TestClient(app)
 
