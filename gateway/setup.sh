@@ -19,7 +19,9 @@ systemctl enable ssh
 systemctl start ssh
 
 # Download and install the cloudflared Debian package
-curl -L --output cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
+# TODO: This should ideally be a different tag
+ARCHITECTURE=$(if [ "$(arch)" = "aarch64" ]; then echo "arm64"; else echo "amd64"; fi)
+curl -L --output cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$ARCHITECTURE.deb"
 dpkg -i cloudflared.deb
 rm -f cloudflared.deb
 
