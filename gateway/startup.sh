@@ -15,6 +15,9 @@ else
   echo "User $SSH_USERNAME already exists. Skipping user creation."
 fi
 
+echo "Starting the SSH service"
+service ssh start
+
 echo "Stopping the Cloudflare Tunnel"
 cloudflared service uninstall > /dev/null 2>&1 || true
 

@@ -14,10 +14,6 @@ sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_con
 sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
 
-# Enable and start the SSH service
-systemctl enable ssh
-systemctl start ssh
-
 # Download and install the cloudflared Debian package
 # TODO: This should ideally be a different tag
 ARCHITECTURE=$(if [ "$(arch)" = "aarch64" ]; then echo "arm64"; else echo "amd64"; fi)
