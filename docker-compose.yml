@@ -24,6 +24,7 @@ services:
 
   relational_database:
     image: postgres:latest
+    restart: always
     environment:
       POSTGRES_DB: openwebui
       POSTGRES_USER: openwebui
@@ -35,6 +36,7 @@ services:
 
   sergeant_service:
     image: ghcr.io/lieutenant-ecosystem/sergeant_service:${ENVIRONMENT}
+    restart: always
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -45,6 +47,7 @@ services:
 
   gateway:
     image: ghcr.io/lieutenant-ecosystem/gateway:${ENVIRONMENT}
+    restart: always
     environment:
       - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
       - SSH_USERNAME=${SSH_USERNAME}
