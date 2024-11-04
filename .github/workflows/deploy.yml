@@ -47,7 +47,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./${{ matrix.service == 'open-webui' && 'open_webui' || matrix.service }}
+          context: ./${{ matrix.service }}
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ steps.docker_tag.outputs.TAG }}
           platforms: linux/amd64,linux/arm64
