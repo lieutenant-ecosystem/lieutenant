@@ -2,7 +2,7 @@ version: '3.8'
 services:
 
   open_webui:
-    image: ghcr.io/lieutenant-ecosystem/open-webui:${ENVIRONMENT}
+    image: ghcr.io/lieutenant-ecosystem/open_webui:${ENVIRONMENT}
     restart: always
     ports:
       - "8080:8080"
@@ -34,7 +34,7 @@ services:
       - lieutenant-intranet
 
   sergeant_service:
-    image: ghcr.io/lieutenant-ecosystem/sergeant-service:${ENVIRONMENT}
+    image: ghcr.io/lieutenant-ecosystem/sergeant_service:${ENVIRONMENT}
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
