@@ -1,8 +1,10 @@
 import json
+import os
 import time
 import uuid
 from typing import Optional, List, Dict, AsyncGenerator
 
+import sentry_sdk
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
 from langchain_core.language_models import BaseChatModel
@@ -15,6 +17,13 @@ from src import common
 from src.sergeant import LLM, Sergeant
 
 start_up_time: int = int(time.time())
+
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        traces_sample_rate=1.0,
+        _experiments={"continuous_profiling_auto_start": True, },
+    )
 app = FastAPI(title="Lieutenant API")
 
 
