@@ -23,7 +23,7 @@ services:
       - lieutenant-intranet
 
   relational_database:
-    image: postgres:latest
+    image: docker.io/postgres:latest
     restart: always
     environment:
       POSTGRES_DB: openwebui
