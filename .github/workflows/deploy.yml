@@ -5,11 +5,11 @@ on:
     branches: [ main, beta, dev ]
 
 jobs:
-  build:
+  Image:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ open-webui, sergeant-service, gateway ]
+        service: [ open_webui, sergeant_service, gateway ]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}
       cancel-in-progress: true
