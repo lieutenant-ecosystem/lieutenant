@@ -13,3 +13,4 @@ aiohttp
 pyyaml
 cerberus
 anthropic
+sentry-sdk[fastapi]
