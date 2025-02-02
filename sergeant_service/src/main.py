@@ -102,9 +102,4 @@ async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
 if __name__ == "__main__":
     import uvicorn
 
-    # if common.is_test_environment():
-    #     import pydevd_pycharm
-    #
-    #     pydevd_pycharm.settrace("host.docker.internal", port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
