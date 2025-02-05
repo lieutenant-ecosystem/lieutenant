@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/lieutenant-ecosystem/gateway:latest
+          env:
+            - name: CLOUDFLARE_TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: CLOUDFLARE_TUNNEL_TOKEN
+            - name: SSH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: SSH_USERNAME
+            - name: SSH_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-secrets
+                  key: SSH_PUBLIC_KEY
+          imagePullPolicy: Always
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gateway-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: gateway
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gateway-client
+        - podSelector:
+            matchLabels:
+              app: lieutenant
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: gateway-client
+        - podSelector:
+            matchLabels:
+              app: lieutenant
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0  # Allow egress to the internet

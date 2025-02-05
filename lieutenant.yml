@@ -1,0 +1,159 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lieutenant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lieutenant
+  template:
+    metadata:
+      labels:
+        app: lieutenant
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          env:
+            - name: OPENAI_API_BASE_URL
+              value: "http://localhost:8000"
+            - name: AUDIO_STT_ENGINE
+              value: "openai"
+            - name: AUDIO_TTS_ENGINE
+              value: "openai"
+            - name: AUDIO_STT_MODEL
+              value: "whisper-1"
+            - name: RAG_EMBEDDING_ENGINE
+              value: "openai"
+            - name: ENABLE_RAG_HYBRID_SEARCH
+              value: "True"
+            - name: RAG_EMBEDDING_MODEL
+              value: "text-embedding-3-small"
+            - name: ENABLE_OAUTH_SIGNUP
+              value: "True"
+            - name: ENABLE_LOGIN_FORM
+              value: "False"
+            - name: ENABLE_RAG_WEB_SEARCH
+              value: "True"
+            - name: ENABLE_OLLAMA_API
+              value: "False"
+            - name: RAG_WEB_SEARCH_ENGINE
+              value: "google_pse"
+            - name: GOOGLE_PSE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: GOOGLE_PSE_API_KEY
+            - name: GOOGLE_PSE_ENGINE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: GOOGLE_PSE_ENGINE_ID
+            - name: MICROSOFT_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: MICROSOFT_CLIENT_ID
+            - name: MICROSOFT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: MICROSOFT_CLIENT_SECRET
+            - name: MICROSOFT_CLIENT_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: MICROSOFT_CLIENT_TENANT_ID
+            - name: AUDIO_TTS_OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+            - name: AUDIO_STT_OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+            - name: RAG_OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+          ports:
+            - containerPort: 8080
+
+        - name: sergeant-service
+          image: ghcr.io/lieutenant-ecosystem/sergeant_service:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ENVIRONMENT
+              value: "dev"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: ANTHROPIC_API_KEY
+            - name: PPLX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: PPLX_API_KEY
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: SENTRY_DSN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lieutenant-service
+spec:
+  selector:
+    app: lieutenant
+  ports:
+    - name: open-webui
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+    - name: sergeant-service
+      protocol: TCP
+      port: 81
+      targetPort: 8000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gateway-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: gateway
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gateway-client
+        - podSelector:
+            matchLabels:
+              app: lieutenant
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: gateway-client
+        - podSelector:
+            matchLabels:
+              app: lieutenant
