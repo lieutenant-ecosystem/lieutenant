@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: ghcr.io/lieutenant-ecosystem/gateway:latest
+          image: ghcr.io/lieutenant-ecosystem/gateway:dev
           env:
             - name: CLOUDFLARE_TUNNEL_TOKEN
               valueFrom:
