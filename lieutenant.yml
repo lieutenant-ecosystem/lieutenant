@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/open-webui/open-webui:dev
+          image: ghcr.io/lieutenant-ecosystem/open_webui:dev
           env:
             - name: ENVIRONMENT
               value: "DEV"
