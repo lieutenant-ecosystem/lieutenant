@@ -16,6 +16,8 @@ spec:
         - name: open-webui
           image: ghcr.io/open-webui/open-webui:dev
           env:
+            - name: ENVIRONMENT
+              value: "DEV"
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: AUDIO_STT_ENGINE
@@ -87,6 +89,7 @@ spec:
           image: ghcr.io/lieutenant-ecosystem/sergeant_service:latest
           ports:
             - containerPort: 8000
+            - containerPort: 5678  # Debug port
           env:
             - name: ENVIRONMENT
               value: "dev"
@@ -127,6 +130,10 @@ spec:
       protocol: TCP
       port: 81
       targetPort: 8000
+    - name: sergeant-service-debug
+      protocol: TCP
+      port: 5678
+      targetPort: 5678
   type: ClusterIP
 
 ---
