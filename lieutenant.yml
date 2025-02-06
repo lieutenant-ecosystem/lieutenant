@@ -84,15 +84,14 @@ spec:
                   key: OPENAI_API_KEY
           ports:
             - containerPort: 8080
-
         - name: sergeant-service
-          image: ghcr.io/lieutenant-ecosystem/sergeant_service:latest
+          image: ghcr.io/lieutenant-ecosystem/sergeant_service:dev
           ports:
             - containerPort: 8000
             - containerPort: 5678  # Debug port
           env:
             - name: ENVIRONMENT
-              value: "dev"
+              value: "DEV"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -134,8 +133,6 @@ spec:
       protocol: TCP
       port: 5678
       targetPort: 5678
-  type: ClusterIP
-
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
