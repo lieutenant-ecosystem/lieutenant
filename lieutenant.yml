@@ -14,10 +14,10 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/open-webui/open-webui:dev
+          image: ghcr.io/open-webui/open-webui:beta
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: AUDIO_STT_ENGINE
@@ -85,13 +85,13 @@ spec:
           ports:
             - containerPort: 8080
         - name: sergeant-service
-          image: ghcr.io/lieutenant-ecosystem/sergeant_service:dev
+          image: ghcr.io/lieutenant-ecosystem/sergeant_service:beta
           ports:
             - containerPort: 8000
             - containerPort: 5678  # Debug port
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
