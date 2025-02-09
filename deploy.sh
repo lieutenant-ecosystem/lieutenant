@@ -14,6 +14,7 @@ newgrp microk8s
 # Lieutenant
 microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
+  --from-literal=DATABASE_URL="${DATABASE_URL}" \
   --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
   --from-literal=PPLX_API_KEY="${PPLX_API_KEY}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
