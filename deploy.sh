@@ -1,9 +1,18 @@
 #!/bin/bash
 
-## Download files
+# Download files
 ENV=${1:-main}
+sudo apt install curl -y
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENV/lieutenant.yml
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENV/gateway.yml
+
+# Install microk8s
+sudo snap install microk8s --classic
+usermod -a -G microk8s $USER
+usermod -aG docker $USER
+newgrp microk8s
+newgrp docker
+alias kubectl="microk8s kubectl"
 
 # Lieutenant
 kubectl create secret generic lieutenant-secrets \
