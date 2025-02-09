@@ -9,13 +9,10 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 # Install microk8s
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
-sudo usermod -aG docker $USER
 newgrp microk8s
-newgrp docker
-alias kubectl="microk8s kubectl"
 
 # Lieutenant
-kubectl create secret generic lieutenant-secrets \
+microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
   --from-literal=PPLX_API_KEY="${PPLX_API_KEY}" \
@@ -25,11 +22,11 @@ kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}"
-kubectl apply -f lieutenant.yml
+microk8s kubectl apply -f lieutenant.yml
 
 # Gateway
-kubectl create secret generic gateway-secrets \
+microk8s kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
-kubectl apply -f gateway.yml
+microk8s kubectl apply -f gateway.yml

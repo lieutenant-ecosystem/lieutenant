@@ -4,13 +4,10 @@
 set +e
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
-sudo usermod -aG docker $USER
 newgrp microk8s
-newgrp docker
-alias kubectl="microk8s kubectl"
 
 # Resetting the environment
-kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
+microk8s kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
 docker system prune -a -f
 set -e
 
@@ -29,7 +26,7 @@ docker push localhost:32000/gateway:local
 
 # Deploy
 ##  Lieutenant
-kubectl create secret generic lieutenant-secrets \
+microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
   --from-literal=PPLX_API_KEY="${PPLX_API_KEY}" \
@@ -39,11 +36,11 @@ kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}"
-kubectl delete -f dev/lieutenant.yml && kubectl apply -f dev/lieutenant.yml
+microk8s kubectl delete -f dev/lieutenant.yml && microk8s kubectl apply -f dev/lieutenant.yml
 
 ##  Gateway
-kubectl create secret generic gateway-secrets \
+microk8s kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
-kubectl delete -f dev/gateway.yml && kubectl apply -f dev/gateway.yml
+microk8s kubectl delete -f dev/gateway.yml && microk8s kubectl apply -f dev/gateway.yml
