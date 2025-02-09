@@ -42,6 +42,11 @@ spec:
               value: "False"
             - name: RAG_WEB_SEARCH_ENGINE
               value: "google_pse"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: DATABASE_URL
             - name: GOOGLE_PSE_API_KEY
               valueFrom:
                 secretKeyRef:
