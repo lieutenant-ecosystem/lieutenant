@@ -9,9 +9,7 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 # Install microk8s
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
-sudo usermod -aG docker $USER
 newgrp microk8s
-newgrp docker
 alias microk8s kubectl="microk8s microk8s kubectl"
 
 # Lieutenant

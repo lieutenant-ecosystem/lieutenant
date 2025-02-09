@@ -4,9 +4,7 @@
 set +e
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
-sudo usermod -aG docker $USER
 newgrp microk8s
-newgrp docker
 
 # Resetting the environment
 microk8s kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
