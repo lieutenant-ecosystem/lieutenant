@@ -1,12 +1,18 @@
 #!/bin/bash
 
 # Install microk8s
+set +e
 sudo snap install microk8s --classic
-usermod -a -G microk8s $USER
-usermod -aG docker $USER
+sudo usermod -a -G microk8s $USER
+sudo usermod -aG docker $USER
 newgrp microk8s
 newgrp docker
 alias kubectl="microk8s kubectl"
+
+# Resetting the environment
+kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
+docker system prune -a -f
+set -e
 
 # Enable the registry
 sudo microk8s enable registry
@@ -33,11 +39,11 @@ kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}"
-kubectl apply -f dev/lieutenant.yml
+kubectl delete -f dev/lieutenant.yml && kubectl apply -f dev/lieutenant.yml
 
 ##  Gateway
 kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
-kubectl apply -f dev/gateway.yml
+kubectl delete -f dev/gateway.yml && kubectl apply -f dev/gateway.yml
