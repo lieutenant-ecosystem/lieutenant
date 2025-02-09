@@ -10,7 +10,6 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 sudo snap install microk8s --classic
 sudo usermod -a -G microk8s $USER
 newgrp microk8s
-alias microk8s kubectl="microk8s microk8s kubectl"
 
 # Lieutenant
 microk8s kubectl create secret generic lieutenant-secrets \
