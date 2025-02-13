@@ -25,6 +25,16 @@ docker push localhost:32000/open_webui:local
 docker push localhost:32000/gateway:local
 
 # Deploy
+
+## Postgres SQL database
+if [ "$ENVIRONMENT" = "dev" ]; then
+  POSTGRES_PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 10)
+  DATABASE_URL=postgresql://lieutenant:$POSTGRES_PASSWORD@postgres-service:5432/lieutenant-open_webui
+  microk8s kubectl create secret generic database-secrets \
+    --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+  microk8s kubectl delete -f dev/database.yml && microk8s kubectl apply -f dev/database.yml
+fi
+
 ##  Lieutenant
 microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
