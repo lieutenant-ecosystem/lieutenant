@@ -67,4 +67,5 @@ kubectl port-forward svc/postgres-service 5432:5432
 
 # Tail the logs
 microk8s kubectl describe pod -l app=lieutenant
+microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
 microk8s kubectl logs -f -l app=lieutenant --all-containers=true
