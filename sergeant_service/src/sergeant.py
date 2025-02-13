@@ -18,10 +18,11 @@ class LLM(Enum):
     O1_PREVIEW: str = "o1 Preview"
     O1_MINI: str = "o1 Mini"
     CLAUDE_35_SONNET: str = "Claude 3.5 Sonnet"
-    LLAMA_31_SONAR_8B: str = "Llama 3.1 Sonar 8B"
-    LLAMA_31_SONAR_70B: str = "Llama 3.1 Sonar 70B"
-    LLAMA_31_8B: str = "Llama 3.1 8B"
-    LLAMA_31_70B: str = "Llama 3.1 70B"
+    CLAUDE_35_HAIKU: str = "Claude 3.5 Haiku"
+    SONAR: str = "Sonar"
+    SONAR_PRO: str = "Sonar Pro"
+    SONAR_REASONING: str = "Sonar Reasoning"
+    SONAR_REASONING_PRO: str = "Sonar Reasoning Pro"
 
 
 class LLMCompatibility(Enum):
