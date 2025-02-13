@@ -1,15 +1,17 @@
 #!/bin/bash
 
 # Install microk8s
-set +e
-sudo snap install microk8s --classic
+if ! microk8s version &>/dev/null; then
+    sudo snap install microk8s --classic
+fi
 sudo usermod -a -G microk8s $USER
-newgrp microk8s
+if ! groups | grep -q "\bmicrok8s\b"; then
+  newgrp microk8s
+fi
 
 # Resetting the environment
 microk8s kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
 docker system prune -a -f
-set -e
 
 # Enable the registry
 sudo microk8s enable registry
