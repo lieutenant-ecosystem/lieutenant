@@ -31,7 +31,7 @@ docker push localhost:32000/gateway:local
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
-  POSTGRES_PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 10)
+  POSTGRES_PASSWORD=samerandominsecurepassword
   DATABASE_URL=postgresql://lieutenant:$POSTGRES_PASSWORD@postgres-service:5432/lieutenant-open_webui
   microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
