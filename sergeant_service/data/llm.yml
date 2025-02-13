@@ -1,3 +1,5 @@
+# Remember to add the LLM's name in src.sergeant.LLM enum
+
 - name: "GPT-4o Mini"
   id: "gpt-4o-mini"
   compatibility: "OpenAI"
@@ -6,30 +8,26 @@
   id: "chatgpt-4o-latest"
   compatibility: "OpenAI"
 
-#- name: "o1 Preview"
-#  id: "o1-preview"
-#  compatibility: "OpenAI"
-
-#- name: "o1 Mini"
-#  id: "o1-mini"
-#  compatibility: "OpenAI"
-
 - name: "Claude 3.5 Sonnet"
   id: "claude-3-5-sonnet-20240620"
   compatibility: "Anthropic"
 
-- name: "Llama 3.1 Sonar 8B"
-  id: "llama-3.1-sonar-small-128k-chat"
+- name: "Claude 3.5 Haiku"
+  id: "claude-3-5-haiku-20241022"
+  compatibility: "Anthropic"
+
+- name: "Sonar"
+  id: "sonar"
   compatibility: "Perplexity"
 
-- name: "Llama 3.1 Sonar 70B"
-  id: "llama-3.1-sonar-large-128k-chat"
+- name: "Sonar Pro"
+  id: "sonar-pro"
   compatibility: "Perplexity"
 
-- name: "Llama 3.1 8B"
-  id: "llama-3.1-8b-instruct"
+- name: "Sonar Reasoning"
+  id: "sonar-reasoning"
   compatibility: "Perplexity"
 
-- name: "Llama 3.1 70B"
-  id: "llama-3.1-70b-instruct"
+- name: "Sonar Reasoning Pro"
+  id: "sonar-reasoning-pro"
   compatibility: "Perplexity"
