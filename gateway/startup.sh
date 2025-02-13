@@ -21,6 +21,9 @@ service ssh start
 echo "Stopping the Cloudflare Tunnel"
 cloudflared service uninstall > /dev/null 2>&1 || true
 
+echo "Setting Cloudflared's log level to DEBUG"
+export CF_TUNNEL_LOGLEVEL=debug
+
 echo "Starting the Cloudflare Tunnel"
 cloudflared service install "$CLOUDFLARE_TUNNEL_TOKEN"
 echo "Cloudflare Tunnel started successfully"

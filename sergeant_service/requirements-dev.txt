@@ -1,4 +1,3 @@
-pydevd-pycharm
 mypy
 pytest
 pytest-asyncio
