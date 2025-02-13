@@ -91,6 +91,7 @@ spec:
             - containerPort: 8080
         - name: sergeant-service
           image: ghcr.io/lieutenant-ecosystem/sergeant_service:dev
+          imagePullPolicy: Always  # Ensure the image is always pulled rather than the local cache being used
           ports:
             - containerPort: 8000
             - containerPort: 5678  # Debug port
