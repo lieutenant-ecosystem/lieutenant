@@ -8,7 +8,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/tmp"  # Path on the host machine
+    path: "/home/kavindu/data"  # Path on the host machine
 
 ---
 apiVersion: v1
