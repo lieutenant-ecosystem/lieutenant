@@ -8,6 +8,10 @@
   id: "chatgpt-4o-latest"
   compatibility: "OpenAI"
 
+- name: "o1 Mini"
+  id: "o1-mini"
+  compatibility: "OpenAI"
+
 - name: "Claude 3.5 Sonnet"
   id: "claude-3-5-sonnet-20240620"
   compatibility: "Anthropic"

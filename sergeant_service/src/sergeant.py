@@ -6,7 +6,7 @@ import yaml
 from langchain_anthropic import ChatAnthropic
 from langchain_community.chat_models import ChatPerplexity
 from langchain_core.language_models import BaseChatModel
-from langchain_openai.chat_models.base import BaseChatOpenAI
+from langchain_openai.chat_models.base import BaseChatOpenAI, ChatOpenAI
 from pydantic import BaseModel
 
 from src.common import Constants
@@ -15,7 +15,6 @@ from src.common import Constants
 class LLM(Enum):
     GPT_4O_MINI: str = "GPT-4o Mini"
     GPT_4O: str = "GPT-4o"
-    O1_PREVIEW: str = "o1 Preview"
     O1_MINI: str = "o1 Mini"
     CLAUDE_35_SONNET: str = "Claude 3.5 Sonnet"
     CLAUDE_35_HAIKU: str = "Claude 3.5 Haiku"
@@ -35,8 +34,8 @@ class LLMConfig(BaseModel):
     name: str
     id: str
     compatibility: LLMCompatibility
-    temperature: Optional[float] = 0.2
-    max_tokens: Optional[int] = 4096
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
     system_prompt: Optional[str] = "You are a helpful assistant."
 
     @staticmethod
@@ -57,14 +56,16 @@ class Sergeant(BaseModel):
         sergeant_list: List[Sergeant] = []
         for llm_config in LLMConfig.get_all():
             if llm_config.compatibility == LLMCompatibility.OPEN_AI:
-                model_class: type = BaseChatOpenAI
+                model_class: type = ChatOpenAI
             elif llm_config.compatibility == LLMCompatibility.ANTHROPIC:
                 model_class: type = ChatAnthropic
+                llm_config.max_tokens = llm_config.max_tokens if llm_config.max_tokens is not None else 4096
+                llm_config.temperature = llm_config.temperature if llm_config.temperature is not None else 0.2
             else:
                 model_class: type = ChatPerplexity
+                llm_config.temperature = llm_config.temperature if llm_config.temperature is not None else 0.2
 
             llm: LLM = next(filter(lambda l: l.value == llm_config.name, list(LLM)))
-
             sergeant_list.append(Sergeant(
                 llm=llm,
                 model=model_class(

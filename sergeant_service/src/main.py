@@ -47,8 +47,8 @@ class Message(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: LLM
     messages: List[Message]
-    max_tokens: Optional[int] = Field(default=4096, le=8192)
-    temperature: Optional[float] = Field(default=0.2, ge=0, le=2)
+    max_tokens: Optional[int] = Field(default=None, le=8192)
+    temperature: Optional[float] = Field(default=None, ge=0, le=2)
     stream: Optional[bool] = False
 
 
