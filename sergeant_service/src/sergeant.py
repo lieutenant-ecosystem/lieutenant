@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from src.common import Constants
 
-
 class LLM(Enum):
     GPT_4O_MINI: str = "GPT-4o Mini"
     GPT_4O: str = "GPT-4o"
@@ -22,6 +21,9 @@ class LLM(Enum):
     SONAR_PRO: str = "Sonar Pro"
     SONAR_REASONING: str = "Sonar Reasoning"
     SONAR_REASONING_PRO: str = "Sonar Reasoning Pro"
+
+openai_model_list: List[LLM] = [LLM.GPT_4O_MINI, LLM.GPT_4O, LLM.O1_MINI]
+reasoning_model_list: List[LLM] = [LLM.O1_MINI, LLM.SONAR_REASONING, LLM.SONAR_REASONING_PRO]
 
 
 class LLMCompatibility(Enum):
@@ -80,3 +82,8 @@ class Sergeant(BaseModel):
     @staticmethod
     def get(llm: LLM) -> "Sergeant":
         return next(filter(lambda s: s.llm == llm, Sergeant.get_all()))
+
+    @staticmethod
+    def get_messages(request: BaseModel) -> List[Dict[str, str]]:
+        is_open_ai: bool = request.model in openai_model_list
+        return [{"role": "developer" if is_open_ai and m.role == "system" else m.role, "content": m.content} for m in request.messages]
