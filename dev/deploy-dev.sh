@@ -10,8 +10,9 @@ if ! groups | grep -q "\bmicrok8s\b"; then
 fi
 
 # Resetting the environment
-microk8s kubectl delete pods -n container-registry --all && docker rm $(docker ps -aq)
-docker system prune -a -f
+microk8s kubectl delete deployments --all
+docker rmi $(docker images -q)
+docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service" {print $2}' | xargs -r docker rmi -f
 
 # Enable the registry
 sudo microk8s enable registry
@@ -33,8 +34,9 @@ if [ "$ENVIRONMENT" = "dev" ]; then
   POSTGRES_PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 10)
   DATABASE_URL=postgresql://lieutenant:$POSTGRES_PASSWORD@postgres-service:5432/lieutenant-open_webui
   microk8s kubectl create secret generic database-secrets \
-    --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
-  microk8s kubectl delete -f dev/database.yml && microk8s kubectl apply -f dev/database.yml
+    --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+    --dry-run=client -o yaml | microk8s kubectl apply -f -
+  microk8s kubectl apply -f dev/database.yml
 fi
 
 ##  Lieutenant
@@ -48,12 +50,21 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=GOOGLE_PSE_ENGINE_ID="${GOOGLE_PSE_ENGINE_ID}" \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
-  --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}"
-microk8s kubectl delete -f dev/lieutenant.yml && microk8s kubectl apply -f dev/lieutenant.yml
+  --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
+  --dry-run=client -o yaml | microk8s kubectl apply -f -
+microk8s kubectl apply -f dev/lieutenant.yml
 
 ##  Gateway
 microk8s kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
-  --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
-microk8s kubectl delete -f dev/gateway.yml && microk8s kubectl apply -f dev/gateway.yml
+  --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" \
+  --dry-run=client -o yaml | microk8s kubectl apply -f -
+microk8s kubectl apply -f dev/gateway.yml
+
+# Port forward the database port
+kubectl port-forward svc/postgres-service 5432:5432
+
+# Tail the logs
+microk8s kubectl describe pod -l app=lieutenant
+microk8s kubectl logs -f -l app=lieutenant --all-containers=true
