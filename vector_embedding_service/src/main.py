@@ -1,13 +1,12 @@
-import json
 import os
 import time
 
+import requests
 import sentry_sdk
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 from starlette.requests import Request
-from starlette.responses import StreamingResponse
 
 from src import common
 
@@ -29,13 +28,43 @@ class AuthenticateToken(HTTPBearer):
     async def __call__(self, request: Request) -> None:
         jwt_token: str = request.headers.get("Authorization")
 
-        # TODO: Review if this is tunnel business is really secure
-        if common.is_from_tunnel(request) and (jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
+        # TODO: Review if this tunnel business is really secure
+        if common.is_from_tunnel(request) and (
+                jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
-@app.get("/ping", dependencies=[Depends(AuthenticateToken())])
-async def models() -> None:
-    pass
+
+class EmbeddingRequest(BaseModel):
+    input: str = Field(...)
+    model: str = Field(default="text-embedding-3-small")
+
+
+class EmbeddingUsage(BaseModel):
+    prompt_tokens: int = Field(...)
+    total_tokens: int = Field(...)
+
+
+class EmbeddingData(BaseModel):
+    object: str = Field(default="list")
+    index: int
+    embedding: list[float]
+
+
+class EmbeddingResponse(BaseModel):
+    object: str = Field(default="list")
+    data: list[EmbeddingData]
+    model: str = Field(default="text-embedding-3-small")
+    usage: EmbeddingUsage
+
+
+@app.post("/embeddings", dependencies=[Depends(AuthenticateToken())], response_model=EmbeddingResponse)
+async def get_embeddings(request: EmbeddingRequest) -> EmbeddingResponse:
+    url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or "https://api.openai.com/v1/embeddings"
+    api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_API_KEY")
+    response = requests.post(url, data=request.model_dump_json(),
+                             headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"})
+
+    return EmbeddingResponse(**response.json())
 
 
 if __name__ == "__main__":
