@@ -169,18 +169,10 @@ spec:
       protocol: TCP
       port: 81
       targetPort: 8000
-    - name: sergeant-service-debug
-      protocol: TCP
-      port: 5678
-      targetPort: 5678
     - name: vector-embedding-service
       protocol: TCP
       port: 82
       targetPort: 8001
-    - name: vector-embedding-debug
-      protocol: TCP
-      port: 5679
-      targetPort: 5679
 
 ---
 

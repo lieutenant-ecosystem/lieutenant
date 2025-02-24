@@ -1,37 +1,15 @@
 # Remember to add the LLM's name in src.sergeant.LLM enum
 
 - name: "GPT-4o Mini"
-  id: "gpt-4o-mini"
-  compatibility: "OpenAI"
+  parent_model_id: "gpt-4o-mini"
 
 - name: "GPT-4o"
-  id: "chatgpt-4o-latest"
-  compatibility: "OpenAI"
+  parent_model_id: "chatgpt-4o-latest"
 
 - name: "o1 Mini"
-  id: "o1-mini"
-  compatibility: "OpenAI"
+  parent_model_id: "o1-mini"
 
-- name: "Claude 3.5 Sonnet"
-  id: "claude-3-5-sonnet-20240620"
-  compatibility: "Anthropic"
-
-- name: "Claude 3.5 Haiku"
-  id: "claude-3-5-haiku-20241022"
-  compatibility: "Anthropic"
-
-- name: "Sonar"
-  id: "sonar"
-  compatibility: "Perplexity"
-
-- name: "Sonar Pro"
-  id: "sonar-pro"
-  compatibility: "Perplexity"
-
-- name: "Sonar Reasoning"
-  id: "sonar-reasoning"
-  compatibility: "Perplexity"
-
-- name: "Sonar Reasoning Pro"
-  id: "sonar-reasoning-pro"
-  compatibility: "Perplexity"
+# Custom models
+- name: "GPT-4o Mini (Custom)"
+  parent_model_id: "gpt-4o-mini"
+  developer_prompt: "You answer questions sarcastically."

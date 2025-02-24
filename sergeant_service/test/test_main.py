@@ -1,11 +1,11 @@
 from typing import List
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
+from httpx import AsyncClient, ASGITransport, Client
 
 from src.main import app, Message, ChatCompletionRequest
-from src.sergeant import LLM
 
 client = TestClient(app)
 
@@ -14,7 +14,7 @@ mock_message_list: List[Message] = [
 ]
 
 mock_chat_completion_request: ChatCompletionRequest = ChatCompletionRequest(
-    model=LLM.CLAUDE_35_SONNET,
+    model="GPT-4o Mini (Custom)",
     messages=mock_message_list,
     max_tokens=100,
     temperature=0.7,
