@@ -19,7 +19,9 @@ spec:
             - name: ENVIRONMENT
               value: "BETA"
             - name: OPENAI_API_BASE_URL
-              value: "http://localhost:8000"
+              value: "http://lieutenant-service:81"
+            - name: RAG_OPENAI_API_BASE_URL
+              value: "http://lieutenant-service:82"
             - name: AUDIO_STT_ENGINE
               value: "openai"
             - name: AUDIO_TTS_ENGINE

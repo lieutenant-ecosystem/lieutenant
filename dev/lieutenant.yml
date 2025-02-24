@@ -20,7 +20,9 @@ spec:
             - name: ENVIRONMENT
               value: "DEV"
             - name: OPENAI_API_BASE_URL
-              value: "http://localhost:8000"
+              value: "http://lieutenant-service:81"
+            - name: RAG_OPENAI_API_BASE_URL
+              value: "http://lieutenant-service:82"
             - name: AUDIO_STT_ENGINE
               value: "openai"
             - name: AUDIO_TTS_ENGINE
@@ -119,7 +121,38 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: SENTRY_DSN
+        - name: vector-embedding-service
+          image: localhost:32000/vector_embedding_service:local
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+            - containerPort: 5679  # Debug port
+          env:
+            - name: ENVIRONMENT
+              value: "DEV"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+            - name: VECTOR_EMBEDDING_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_BASE_URL
+            - name: VECTOR_EMBEDDING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_API_KEY
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: SENTRY_DSN
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -136,11 +169,13 @@ spec:
       protocol: TCP
       port: 81
       targetPort: 8000
-    - name: sergeant-service-debug
+    - name: vector-embedding-service
       protocol: TCP
-      port: 5678
-      targetPort: 5678
+      port: 82
+      targetPort: 8001
+
 ---
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

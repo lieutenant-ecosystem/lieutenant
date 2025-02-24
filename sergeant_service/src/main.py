@@ -14,7 +14,7 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from src import common
-from src.sergeant import LLM, Sergeant
+from src.sergeant import Sergeant
 
 start_up_time: int = int(time.time())
 
@@ -45,7 +45,7 @@ class Message(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    model: LLM
+    model: str
     messages: List[Message]
     max_tokens: Optional[int] = Field(default=None, le=8192)
     temperature: Optional[float] = Field(default=None, ge=0, le=2)
@@ -60,7 +60,7 @@ async def stream_response(llm: BaseChatModel, messages: List[Dict], request: Cha
                 'id': str(uuid.uuid4()),
                 'object': 'chat.completion.chunk',
                 'created': int(time.time()),
-                'model': request.model.value,
+                'model': request.model,
                 'choices': [{'delta': {'content': token}}],
             })}\n\n"
     yield "data: [DONE]\n\n"
@@ -68,11 +68,10 @@ async def stream_response(llm: BaseChatModel, messages: List[Dict], request: Cha
 
 @app.post("/chat/completions", dependencies=[Depends(AuthenticateToken())], response_model=None)
 async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
-    messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
-    llm: LLM = next(filter(lambda l: l == request.model, list(LLM)))
-    sergeant: Sergeant = Sergeant.get(llm)
+    sergeant: Sergeant = Sergeant.get(request.model)
     sergeant.model.temperature = request.temperature
     sergeant.model.max_tokens = request.max_tokens
+    messages: List[Dict[str, str]] = Sergeant.get_messages(request, sergeant)
 
     try:
         if request.stream:
@@ -83,7 +82,7 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": request.model.value,
+            "model": request.model,
             "choices": [{"message": {"role": "assistant", "content": response.content}}],
         }
 
@@ -95,16 +94,10 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
 async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
     return {
         "object": "list",
-        "data": [{"id": sergeant.llm.value, "object": "model", "created": start_up_time, "owned_by": "N/A"} for sergeant in Sergeant.get_all()]
+        "data": [{"id": sergeant.name, "object": "model", "created": start_up_time, "owned_by": "N/A"} for sergeant in Sergeant.get_all()]
     }
 
 
 if __name__ == "__main__":
     import uvicorn
-
-    # if common.is_test_environment():
-    #     import pydevd_pycharm
-    #
-    #     pydevd_pycharm.settrace("host.docker.internal", port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-
     uvicorn.run(app, host="0.0.0.0", port=8000)

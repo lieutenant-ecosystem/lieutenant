@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ open_webui, sergeant_service, gateway ]
+        service: [ open_webui, sergeant_service, vector_embedding_service, gateway ]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.service }}
       cancel-in-progress: true

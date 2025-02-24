@@ -19,11 +19,13 @@ sudo microk8s enable registry
 
 # Build the images
 docker build -t localhost:32000/sergeant_service:local sergeant_service
+docker build -t localhost:32000/vector_embedding_service:local vector_embedding_service
 docker build -t localhost:32000/open_webui:local open_webui
 docker build -t localhost:32000/gateway:local gateway
 
 # Push the images to the registry
 docker push localhost:32000/sergeant_service:local
+docker push localhost:32000/vector_embedding_service:local
 docker push localhost:32000/open_webui:local
 docker push localhost:32000/gateway:local
 
@@ -51,6 +53,8 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
+  --from-literal=VECTOR_EMBEDDING_BASE_URL="${VECTOR_EMBEDDING_BASE_URL}" \
+  --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
   --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f dev/lieutenant.yml
 

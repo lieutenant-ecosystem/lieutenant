@@ -3,42 +3,19 @@ from functools import lru_cache
 from typing import List, Dict, Any, Optional
 
 import yaml
-from langchain_anthropic import ChatAnthropic
-from langchain_community.chat_models import ChatPerplexity
-from langchain_core.language_models import BaseChatModel
-from langchain_openai.chat_models.base import BaseChatOpenAI, ChatOpenAI
+from langchain_openai.chat_models.base import ChatOpenAI
 from pydantic import BaseModel
 
 from src.common import Constants
 
-class LLM(Enum):
-    GPT_4O_MINI: str = "GPT-4o Mini"
-    GPT_4O: str = "GPT-4o"
-    O1_MINI: str = "o1 Mini"
-    CLAUDE_35_SONNET: str = "Claude 3.5 Sonnet"
-    CLAUDE_35_HAIKU: str = "Claude 3.5 Haiku"
-    SONAR: str = "Sonar"
-    SONAR_PRO: str = "Sonar Pro"
-    SONAR_REASONING: str = "Sonar Reasoning"
-    SONAR_REASONING_PRO: str = "Sonar Reasoning Pro"
-
-openai_model_list: List[LLM] = [LLM.GPT_4O_MINI, LLM.GPT_4O, LLM.O1_MINI]
-reasoning_model_list: List[LLM] = [LLM.O1_MINI, LLM.SONAR_REASONING, LLM.SONAR_REASONING_PRO]
-
-
-class LLMCompatibility(Enum):
-    OPEN_AI: str = "OpenAI"
-    ANTHROPIC: str = "Anthropic"
-    PERPLEXITY: str = "Perplexity"
-
 
 class LLMConfig(BaseModel):
     name: str
-    id: str
-    compatibility: LLMCompatibility
+    parent_model_id: str
+    endpoint: Optional[str] = "https://api.openai.com/v1/"
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
-    system_prompt: Optional[str] = "You are a helpful assistant."
+    developer_prompt: Optional[str] = "You are a helpful assistant."
 
     @staticmethod
     def get_all() -> List["LLMConfig"]:
@@ -49,41 +26,51 @@ class LLMConfig(BaseModel):
 
 
 class Sergeant(BaseModel):
-    llm: LLM
-    model: BaseChatModel
+    name: str
+    parent_model_id: str
+    developer_prompt: str
+    model: ChatOpenAI
+
+    @staticmethod
+    def _get_base_chat_model(llm_config: LLMConfig) -> ChatOpenAI:
+        return ChatOpenAI(
+            model=llm_config.parent_model_id,   #   type: ignore[call-arg]
+            temperature=llm_config.temperature,
+            max_tokens=llm_config.max_tokens
+        )
 
     @staticmethod
     @lru_cache
     def get_all() -> List["Sergeant"]:
         sergeant_list: List[Sergeant] = []
         for llm_config in LLMConfig.get_all():
-            if llm_config.compatibility == LLMCompatibility.OPEN_AI:
-                model_class: type = ChatOpenAI
-            elif llm_config.compatibility == LLMCompatibility.ANTHROPIC:
-                model_class: type = ChatAnthropic
-                llm_config.max_tokens = llm_config.max_tokens if llm_config.max_tokens is not None else 4096
-                llm_config.temperature = llm_config.temperature if llm_config.temperature is not None else 0.2
-            else:
-                model_class: type = ChatPerplexity
-                llm_config.temperature = llm_config.temperature if llm_config.temperature is not None else 0.2
+            chat_model: ChatOpenAI = Sergeant._get_base_chat_model(llm_config)
 
-            llm: LLM = next(filter(lambda l: l.value == llm_config.name, list(LLM)))
             sergeant_list.append(Sergeant(
-                llm=llm,
-                model=model_class(
-                    temperature=llm_config.temperature,
-                    max_tokens=llm_config.max_tokens,
-                    model=llm_config.id
-                )
+                name=llm_config.name,
+                parent_model_id=llm_config.parent_model_id,
+                developer_prompt=llm_config.developer_prompt,
+                model=chat_model
             ))
 
         return sergeant_list
 
     @staticmethod
-    def get(llm: LLM) -> "Sergeant":
-        return next(filter(lambda s: s.llm == llm, Sergeant.get_all()))
+    def get(model_name: str) -> "Sergeant":
+        return next(filter(lambda s: s.name == model_name, Sergeant.get_all()))
 
     @staticmethod
-    def get_messages(request: BaseModel) -> List[Dict[str, str]]:
-        is_open_ai: bool = request.model in openai_model_list
-        return [{"role": "developer" if is_open_ai and m.role == "system" else m.role, "content": m.content} for m in request.messages]
+    def get_messages(request: BaseModel, sergeant: "Sergeant") -> List[Dict[str, str]]:
+        message_list: List[Dict[str, str]] = []
+        for message in request.messages:    #   type: ignore[attr-defined]
+            is_developer_prompt = message.role == "system" or message.role == "developer"
+            if is_developer_prompt:
+                role: str = "developer"
+                content: str = f"{sergeant.developer_prompt}\n---\n{message.content}"
+            else:
+                role = message.role
+                content = message.content
+
+            message_list.append({"role": role, "content": content})
+
+        return message_list
