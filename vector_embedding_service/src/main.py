@@ -1,14 +1,13 @@
 import os
 import time
+from typing import Dict, Any
 
-import requests
+import httpx
 import sentry_sdk
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, Depends, Body
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 from starlette.requests import Request
-
-from src import common
 
 start_up_time: int = int(time.time())
 
@@ -28,10 +27,10 @@ class AuthenticateToken(HTTPBearer):
     async def __call__(self, request: Request) -> None:
         jwt_token: str = request.headers.get("Authorization")
 
-        # TODO: Review if this tunnel business is really secure
-        if common.is_from_tunnel(request) and (
-                jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
-            raise HTTPException(status_code=401, detail="Invalid token.")
+        # # TODO: Review if this tunnel business is really secure
+        # if common.is_from_tunnel(request) and (
+        #         jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
+        #     raise HTTPException(status_code=401, detail="Invalid token.")
 
 
 class EmbeddingRequest(BaseModel):
@@ -57,22 +56,21 @@ class EmbeddingResponse(BaseModel):
     usage: EmbeddingUsage
 
 
-@app.post("/embeddings", dependencies=[Depends(AuthenticateToken())], response_model=EmbeddingResponse)
-async def get_embeddings(request: EmbeddingRequest) -> EmbeddingResponse:
+@app.post("/embeddings", dependencies=[Depends(AuthenticateToken())])
+async def get_embeddings(request_body: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or "https://api.openai.com/v1/embeddings"
     api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_API_KEY")
-    response = requests.post(url, data=request.model_dump_json(),
-                             headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"})
 
-    return EmbeddingResponse(**response.json())
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url,
+            json={"input": request_body["input"], "model": request_body["model"]},
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+        )
+
+    return response.json()
 
 
 if __name__ == "__main__":
     import uvicorn
-
-    # if common.is_test_environment():
-    #     import pydevd_pycharm
-    #
-    #     pydevd_pycharm.settrace("host.docker.internal", port=5678, stdoutToServer=True, stderrToServer=True, suspend=False)
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
