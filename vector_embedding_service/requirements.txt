@@ -6,3 +6,7 @@ pydantic
 starlette
 fastapi
 sentry-sdk[fastapi]
+pgvector
+sqlalchemy[asyncio]
+psycopg2-binary
+asyncpg

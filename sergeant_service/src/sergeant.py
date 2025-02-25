@@ -34,7 +34,7 @@ class Sergeant(BaseModel):
     @staticmethod
     def _get_base_chat_model(llm_config: LLMConfig) -> ChatOpenAI:
         return ChatOpenAI(
-            model=llm_config.parent_model_id,   #   type: ignore[call-arg]
+            model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
             max_tokens=llm_config.max_tokens
         )

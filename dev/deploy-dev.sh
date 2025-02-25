@@ -55,6 +55,7 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
   --from-literal=VECTOR_EMBEDDING_BASE_URL="${VECTOR_EMBEDDING_BASE_URL}" \
   --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
+  --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
   --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f dev/lieutenant.yml
 
