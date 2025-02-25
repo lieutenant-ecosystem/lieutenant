@@ -65,16 +65,14 @@ class Embedding(BaseModel):
         embedding_list: List[Embedding] = []
         query_embedding = await Embedding.get_embedding(content=query, source="query", index=index, model=model)
         async for session in database.get_async_session():
-            stmt = (
+            sql_query = (
                 select(Vectors)
                 .where(Vectors.index == index)
-                .order_by(
-                    func.cosine_distance(Vectors.embedding, literal(query_embedding.embeddings, type_=Vectors.embedding.type))
-                )
+                .order_by(func.cosine_distance(Vectors.embedding, literal(query_embedding.embeddings, type_=Vectors.embedding.type)))
                 .limit(top_k)
             )
 
-            result = await session.execute(stmt)
+            result = await session.execute(sql_query)
             vectors = result.scalars().all()
 
             embedding_list = [
