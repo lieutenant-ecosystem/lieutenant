@@ -7,7 +7,10 @@ import sentry_sdk
 from fastapi import FastAPI, Depends, Body
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
+
+from src import common
 
 start_up_time: int = int(time.time())
 
@@ -27,33 +30,15 @@ class AuthenticateToken(HTTPBearer):
     async def __call__(self, request: Request) -> None:
         jwt_token: str = request.headers.get("Authorization")
 
-        # # TODO: Review if this tunnel business is really secure
-        # if common.is_from_tunnel(request) and (
-        #         jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
-        #     raise HTTPException(status_code=401, detail="Invalid token.")
+        # TODO: Review if this tunnel business is really secure
+        if common.is_from_tunnel(request) and (
+                jwt_token is None or not await common.is_valid_jwt_token(jwt_token.replace("Bearer ", ""))):
+            raise HTTPException(status_code=401, detail="Invalid token.")
 
 
 class EmbeddingRequest(BaseModel):
     input: str = Field(...)
     model: str = Field(default="text-embedding-3-small")
-
-
-class EmbeddingUsage(BaseModel):
-    prompt_tokens: int = Field(...)
-    total_tokens: int = Field(...)
-
-
-class EmbeddingData(BaseModel):
-    object: str = Field(default="list")
-    index: int
-    embedding: list[float]
-
-
-class EmbeddingResponse(BaseModel):
-    object: str = Field(default="list")
-    data: list[EmbeddingData]
-    model: str = Field(default="text-embedding-3-small")
-    usage: EmbeddingUsage
 
 
 @app.post("/embeddings", dependencies=[Depends(AuthenticateToken())])
@@ -73,4 +58,5 @@ async def get_embeddings(request_body: Dict[str, Any] = Body(...)) -> Dict[str, 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8001)

@@ -15,6 +15,4 @@ async def test_get_embeddings() -> None:
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=json) as response:
-            data = await response.json()
-            print(data)
-            pass
+            assert response.status == 200
