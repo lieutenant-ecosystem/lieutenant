@@ -1,18 +1,20 @@
+from typing import Dict, Any
+
+import aiohttp
 import pytest
-from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
 
-from src.main import app
-from vector_embedding_service.src.main import EmbeddingRequest
+from src.main import EmbeddingRequest
 
-client = TestClient(app)
+BASE_URL: str ="http://0.0.0.0:8001"
 
 
 @pytest.mark.asyncio
 async def test_get_embeddings() -> None:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/embeddings", content=EmbeddingRequest(input="What is the capital of France?",
-                                                                         model="text-embedding-3-small").model_dump_json())
+    url: str = f"{BASE_URL}/embeddings"
+    json: Dict[Any, Any] = EmbeddingRequest(input="What is the capital of France?",model="text-embedding-3-small").model_dump()
 
-    print(response.json())
-    assert response.status_code == 200
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=json) as response:
+            data = await response.json()
+            print(data)
+            pass

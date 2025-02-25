@@ -1,13 +1,9 @@
-from typing import List
-
-import httpx
+from typing import List, Dict, Any
+import aiohttp
 import pytest
-from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport, Client
+from src.main import Message, ChatCompletionRequest
 
-from src.main import app, Message, ChatCompletionRequest
-
-client = TestClient(app)
+BASE_URL: str = "http://0.0.0.0:8000"
 
 mock_message_list: List[Message] = [
     Message(role="user", content="What is the capital of France? Answer in one word only.")
@@ -24,15 +20,22 @@ mock_chat_completion_request: ChatCompletionRequest = ChatCompletionRequest(
 
 @pytest.mark.asyncio
 async def test_chat_completion() -> None:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/chat/completions", content=mock_chat_completion_request.model_dump_json())
+    url: str = f"{BASE_URL}/chat/completions"
+    json: Dict[Any, Any] = mock_chat_completion_request.model_dump()
 
-    assert response.status_code == 200
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=json) as response:
+            data = await response.json()
+            print(data)
+            assert response.status == 200
 
 
 @pytest.mark.asyncio
 async def test_all_models() -> None:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.get("/models")
+    url: str = f"{BASE_URL}/models"
 
-    assert len(response.json()["data"]) > 0
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            data = await response.json()
+            print(data)
+            assert len(data["data"]) > 0
