@@ -69,7 +69,7 @@ class Embedding(BaseModel):
                 select(Vectors)
                 .where(Vectors.index == index)
                 .order_by(
-                    func.l2_distance(Vectors.embedding, literal(query_embedding.embeddings, type_=Vectors.embedding.type))
+                    func.cosine_distance(Vectors.embedding, literal(query_embedding.embeddings, type_=Vectors.embedding.type))
                 )
                 .limit(top_k)
             )
