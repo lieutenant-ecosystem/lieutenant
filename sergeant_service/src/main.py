@@ -1,20 +1,18 @@
-import json
 import os
 import time
 import uuid
-from typing import Optional, List, Dict, AsyncGenerator
+from typing import List, Dict
 
 import sentry_sdk
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
-from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
-from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from src import common
-from src.sergeant import Sergeant
+from src.sergeant import Sergeant, stream_response
+from src.models import ChatCompletionRequest, ChatCompletionResponse
 
 start_up_time: int = int(time.time())
 
@@ -39,35 +37,8 @@ class AuthenticateToken(HTTPBearer):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
 
-class Message(BaseModel):
-    role: str
-    content: str
-
-
-class ChatCompletionRequest(BaseModel):
-    model: str
-    messages: List[Message]
-    max_tokens: Optional[int] = Field(default=None, le=8192)
-    temperature: Optional[float] = Field(default=None, ge=0, le=2)
-    stream: Optional[bool] = False
-
-
-async def stream_response(llm: BaseChatModel, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
-    async for chunk in llm.astream(messages):
-        token = chunk.content
-        if token:
-            yield f"data: {json.dumps({
-                'id': str(uuid.uuid4()),
-                'object': 'chat.completion.chunk',
-                'created': int(time.time()),
-                'model': request.model,
-                'choices': [{'delta': {'content': token}}],
-            })}\n\n"
-    yield "data: [DONE]\n\n"
-
-
 @app.post("/chat/completions", dependencies=[Depends(AuthenticateToken())], response_model=None)
-async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
+async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | ChatCompletionResponse:
     sergeant: Sergeant = Sergeant.get(request.model)
     sergeant.model.temperature = request.temperature
     sergeant.model.max_tokens = request.max_tokens
@@ -75,16 +46,9 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
 
     try:
         if request.stream:
-            return StreamingResponse(stream_response(sergeant.model, messages, request), media_type="text/event-stream")
-
-        response: BaseMessage = await sergeant.model.ainvoke(messages)
-        return {
-            "id": str(uuid.uuid4()),
-            "object": "chat.completion",
-            "created": int(time.time()),
-            "model": request.model,
-            "choices": [{"message": {"role": "assistant", "content": response.content}}],
-        }
+            return sergeant.ask_stream(messages, request)
+        else:
+            return await sergeant.ask(messages)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -100,4 +64,5 @@ async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

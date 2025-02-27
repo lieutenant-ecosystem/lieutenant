@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 import aiohttp
 import pytest
-from src.main import Message, ChatCompletionRequest
+from src.models import Message, ChatCompletionRequest
 
 BASE_URL: str = "http://0.0.0.0:8000"
 
