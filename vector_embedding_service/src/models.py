@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Optional, List, Any, Dict
 
@@ -10,6 +11,7 @@ from pydantic import BaseModel, Field
 from src import common
 
 DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
+
 
 class Embedding(BaseModel):
     id: Optional[str] = None
@@ -34,6 +36,8 @@ class Embedding(BaseModel):
             use_jsonb=True,
         )
 
+        #   TODO: Figure out why "Failed to create vector extension: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place?" and make this asynchronous
+        # await asyncio.to_thread(vector_store.add_documents, [document], ids=[document.metadata["id"]])
         vector_store.add_documents([document], ids=[document.metadata["id"]])
 
     @staticmethod
@@ -46,13 +50,17 @@ class Embedding(BaseModel):
             use_jsonb=True,
         )
 
+        #   TODO: Figure out why "Failed to create vector extension: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place?" and make this asynchronous
+        # document_list: List[Document] = await asyncio.to_thread(vector_store.similarity_search, query, k=k)
+        document_list: List[Document] = vector_store.similarity_search(query, k=k)
+
         return [Embedding(
             id=document.id,
             source=document.metadata.get("source"),
             content=document.page_content,
             index=index,
             embedding_model=model
-        ) for document in vector_store.similarity_search(query, k=k)]
+        ) for document in document_list]
 
     @staticmethod
     async def get_raw_embedding(content: str, model: Optional[str] = None) -> Dict[str, Any]:
