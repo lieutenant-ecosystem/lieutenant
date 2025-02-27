@@ -20,4 +20,5 @@
   parent_model_id: "gpt-4o-mini"
   developer_prompt: "You answer questions sarcastically."
   indexes:
-    - "TEST"
+    - id: "TEST"
+      description: "Testing vector database"

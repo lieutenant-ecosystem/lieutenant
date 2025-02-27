@@ -45,7 +45,7 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
     messages: List[Dict[str, str]] = Sergeant.get_messages(request, sergeant)
 
     try:
-        if len(sergeant.indexes) > 0:
+        if len(sergeant.llm_config.index_list) > 0:
             sergeant.add_context_from_indexes(messages)
 
         if request.stream:

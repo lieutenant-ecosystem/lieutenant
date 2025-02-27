@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional, AsyncGenerator
 
 import yaml
 from langchain.retrievers import SelfQueryRetriever, MergerRetriever
+from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
 from langchain_openai import OpenAIEmbeddings
@@ -35,21 +36,46 @@ async def stream_response(llm: BaseChatModel, messages: List[Dict], request: Cha
     yield "data: [DONE]\n\n"
 
 
+class LLMIndexConfig(BaseModel):
+    id: str
+    description: str
+
+
 class LLMConfig(BaseModel):
     name: str
     parent_model_id: str
     endpoint: Optional[str] = "https://api.openai.com/v1/"
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
-    developer_prompt: Optional[str] = "You are a helpful assistant."
-    indexes: List[str] = []
+    developer_prompt: str = "You are a helpful assistant."
+    index_list: List[LLMIndexConfig] = []
 
     @staticmethod
     def get_all() -> List["LLMConfig"]:
+        llm_config_list: List[LLMConfig] = []
         with open(Constants.LLM_YAML_PATH.value, "r") as raw_string:
             raw_data_list: List[Dict[str, Any]] = yaml.safe_load(raw_string)
 
-        return [LLMConfig(**raw_data) for raw_data in raw_data_list]
+        for raw_data in raw_data_list:
+            name: str = raw_data.get("name")
+            parent_model_id: str = raw_data.get("parent_model_id")
+            endpoint: str = raw_data.get("endpoint") or "https://api.openai.com/v1/"
+            temperature: int = raw_data.get("temperature")
+            max_tokens: int = raw_data.get("max_tokens")
+            developer_prompt: str = raw_data.get("developer_prompt") or "You are a helpful assistant."
+            index_list: List[LLMIndexConfig] = [LLMIndexConfig(**index_config) for index_config in raw_data.get("indexes")] if raw_data.get("indexes") is not None else []
+
+            llm_config_list.append(LLMConfig(
+                name=name,
+                parent_model_id=parent_model_id,
+                endpoint=endpoint,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                developer_prompt=developer_prompt,
+                index_list=index_list
+            ))
+
+        return llm_config_list
 
 
 class Sergeant(BaseModel):
@@ -57,36 +83,34 @@ class Sergeant(BaseModel):
     parent_model_id: str
     developer_prompt: str
     model: ChatOpenAI
-    indexes: List[str] = []
+    llm_config: LLMConfig
 
     def add_context_from_indexes(self, messages: List[Dict[str, str]]) -> None:
         retrievers_list: List[SelfQueryRetriever] = []
-        for index_name in self.indexes:
-            index_description: str = "Capitals of different countries"
-            retrievers_list.append(
-                SelfQueryRetriever.from_llm(
-                    self.model,
-                    PGVector(
-                        embeddings=OpenAIEmbeddings(model=DEFAULT_EMBEDDING_MODEL),
-                        collection_name=index_name,
-                        connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
-                        use_jsonb=True,
-                    ),
-                    index_description,
-                    metadata_field_info=[],
-                    verbose=True,
-                )
+
+        for index in self.llm_config.index_list:
+            vector_store = PGVector(
+                embeddings=OpenAIEmbeddings(model=DEFAULT_EMBEDDING_MODEL),
+                collection_name=index.id,
+                connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
+                use_jsonb=True,
             )
+            retriever: SelfQueryRetriever = SelfQueryRetriever.from_llm(self.model, vector_store, index.description, metadata_field_info=[], verbose=True)
+            retrievers_list.append(retriever)
 
         parent_retriever: MergerRetriever = MergerRetriever(retrievers=retrievers_list)
 
         query: str = messages[-1]["content"]
-        retrieved_docs = parent_retriever.get_relevant_documents(query)
+        retrieved_docs: List[Document] = parent_retriever.invoke(query)
         if len(retrieved_docs) > 0:
+            context: str = ""
+            for document in retrieved_docs:
+                context = context + "# Data\n"
+                context = context + f"{document.page_content}"
+                context = context + "# Metadata\n"
+                context = context + f"## Source\nf{document.metadata.get("source")}"
 
-            #   TODO: Add more context from metadata here
-            docs_context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
-            messages.insert(0, {"role": "system", "content": f"Retrieved Context:\n{docs_context}"})
+            messages.insert(0, {"role": "system", "content": f"{self.developer_prompt}\n---\n# Context retrieved\n{context}"})
 
     async def ask(self, messages: List[Dict[str, str]]) -> ChatCompletionResponse:
         response: BaseMessage = await self.model.ainvoke(messages)
@@ -115,7 +139,7 @@ class Sergeant(BaseModel):
                 parent_model_id=llm_config.parent_model_id,
                 developer_prompt=llm_config.developer_prompt,
                 model=chat_model,
-                indexes=llm_config.indexes
+                llm_config=llm_config
             ))
 
         return sergeant_list
