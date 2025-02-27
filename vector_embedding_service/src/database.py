@@ -8,11 +8,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+#   TODO: Add logic that automatically creates the database if it doesn't exist
 Base = declarative_base()
-engine = create_async_engine(
-    f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@10.1.83.27:5432/postgres",
-    echo=True
-)
+engine = create_async_engine(f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@10.1.83.27:5432/lieutenant-vector_embedding_service", echo=True)
 AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)  # type: ignore[call-overload]
 
 
@@ -39,4 +37,4 @@ class Vectors(Base):  # type: ignore[misc,valid-type]
     content = Column(String, nullable=False)
     source = Column(String, nullable=False)
     index = Column(String, nullable=False)
-    embedding = Column(Vector(1536), nullable=False)    #   type: ignore[var-annotated]
+    embedding = Column(Vector(1536), nullable=False)  # type: ignore[var-annotated]
