@@ -10,3 +10,5 @@ pgvector
 sqlalchemy[asyncio]
 psycopg2-binary
 asyncpg
+langchain-openai
+langchain_postgres

@@ -37,12 +37,12 @@ class AuthenticateToken(HTTPBearer):
 
 @app.post("/database", dependencies=[Depends(AuthenticateToken())])
 async def upsert_embedding(embedding: Embedding) -> None:
-    await embedding.upsert()
+    embedding.upsert()
 
 
 @app.get("/database", dependencies=[Depends(AuthenticateToken())])
 async def query(embedding_query: EmbeddingQuery) -> List[Embedding]:
-    return await Embedding.query(embedding_query.input, embedding_query.index)
+    return Embedding.query(embedding_query.input, embedding_query.index)
 
 
 @app.post("/embeddings", dependencies=[Depends(AuthenticateToken())])

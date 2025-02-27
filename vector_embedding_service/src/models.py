@@ -1,40 +1,62 @@
 import os
-import uuid
 from typing import Optional, List, Any, Dict
 
 import httpx
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+from langchain_postgres import PGVector
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, literal
 
-from src import database
-from src.database import Vectors
+from src import common
 
+DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 
 class Embedding(BaseModel):
-    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = None
     source: str
     content: str
     index: str
-    embeddings: List[float]
+    embedding_model: Optional[str] = Field(default=DEFAULT_MODEL)
 
-    async def upsert(self) -> None:
-        if len(self.embeddings) != 1536:
-            raise ValueError(f"Embeddings must be of dimension 1536, got {len(self.embeddings)}")
+    def upsert(self) -> None:
+        if self.id is None:
+            self.id = common.get_sha256_hash(self.content)
 
-        vector = Vectors(
-            content=self.content,
-            source=self.source,
-            index=self.index,
-            embedding=self.embeddings
+        document: Document = Document(
+            page_content=self.content,
+            metadata=self.model_dump(exclude={"content"}),
         )
 
-        async for session in database.get_async_session():
-            session.add(vector)
-            await session.commit()
-            break
+        vector_store = PGVector(
+            embeddings=OpenAIEmbeddings(model=self.embedding_model),
+            collection_name=self.index,
+            connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
+            use_jsonb=True,
+        )
+
+        vector_store.add_documents([document], ids=[document.metadata["id"]])
 
     @staticmethod
-    async def get_raw_embedding(content: str, model: str = "text-embedding-3-small") -> Dict[str, Any]:
+    def query(query: str, index: str, model: Optional[str] = None, k: int = 10) -> List["Embedding"]:
+        model = DEFAULT_MODEL if model is None else model
+        vector_store = PGVector(
+            embeddings=OpenAIEmbeddings(model=model),
+            collection_name=index,
+            connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
+            use_jsonb=True,
+        )
+
+        return [Embedding(
+            id=document.id,
+            source=document.metadata.get("source"),
+            content=document.page_content,
+            index=index,
+            embedding_model=model
+        ) for document in vector_store.similarity_search(query, k=k)]
+
+    @staticmethod
+    async def get_raw_embedding(content: str, model: Optional[str] = None) -> Dict[str, Any]:
+        model = DEFAULT_MODEL if model is None else model
         url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or "https://api.openai.com/v1/embeddings"
         api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_API_KEY")
 
@@ -47,46 +69,6 @@ class Embedding(BaseModel):
 
             response.raise_for_status()  # Ensure the request was successful
             return response.json()
-
-    @staticmethod
-    async def get_embedding(content: str, source: str, index: str, model: str = "text-embedding-3-small") -> "Embedding":
-        raw_embedding: Dict[str, Any] = await Embedding.get_raw_embedding(content, model)
-        embeddings: List[float] = raw_embedding["data"][0]["embedding"]
-
-        return Embedding(
-            source=source,
-            content=content,
-            index=index,
-            embeddings=embeddings
-        )
-
-    @staticmethod
-    async def query(query: str, index: str, model: str = "text-embedding-3-small", top_k: int = 10) -> List["Embedding"]:
-        embedding_list: List[Embedding] = []
-        query_embedding = await Embedding.get_embedding(content=query, source="query", index=index, model=model)
-        async for session in database.get_async_session():
-            sql_query = (
-                select(Vectors)
-                .where(Vectors.index == index)
-                .order_by(func.cosine_distance(Vectors.embedding, literal(query_embedding.embeddings, type_=Vectors.embedding.type)))
-                .limit(top_k)
-            )
-
-            result = await session.execute(sql_query)
-            vectors = result.scalars().all()
-
-            embedding_list = [
-                Embedding(
-                    id=str(vector.id),
-                    source=vector.source,
-                    content=vector.content,
-                    index=vector.index,
-                    embeddings=vector.embedding.tolist()
-                )
-                for vector in vectors
-            ]
-
-        return embedding_list
 
 
 class EmbeddingGet(BaseModel):
