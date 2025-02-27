@@ -1,19 +1,24 @@
 import json
+import os
 import time
 import uuid
-from enum import Enum
 from functools import lru_cache
 from typing import List, Dict, Any, Optional, AsyncGenerator
 
 import yaml
+from langchain.retrievers import SelfQueryRetriever, MergerRetriever
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
+from langchain_openai import OpenAIEmbeddings
 from langchain_openai.chat_models.base import ChatOpenAI
+from langchain_postgres import PGVector
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
 from src.common import Constants
 from src.models import ChatCompletionRequest, ChatCompletionResponse
+
+DEFAULT_EMBEDDING_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 
 
 async def stream_response(llm: BaseChatModel, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
@@ -53,6 +58,35 @@ class Sergeant(BaseModel):
     developer_prompt: str
     model: ChatOpenAI
     indexes: List[str] = []
+
+    def add_context_from_indexes(self, messages: List[Dict[str, str]]) -> None:
+        retrievers_list: List[SelfQueryRetriever] = []
+        for index_name in self.indexes:
+            index_description: str = "Capitals of different countries"
+            retrievers_list.append(
+                SelfQueryRetriever.from_llm(
+                    self.model,
+                    PGVector(
+                        embeddings=OpenAIEmbeddings(model=DEFAULT_EMBEDDING_MODEL),
+                        collection_name=index_name,
+                        connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
+                        use_jsonb=True,
+                    ),
+                    index_description,
+                    metadata_field_info=[],
+                    verbose=True,
+                )
+            )
+
+        parent_retriever: MergerRetriever = MergerRetriever(retrievers=retrievers_list)
+
+        query: str = messages[-1]["content"]
+        retrieved_docs = parent_retriever.get_relevant_documents(query)
+        if len(retrieved_docs) > 0:
+
+            #   TODO: Add more context from metadata here
+            docs_context = "\n---\n".join([doc.page_content for doc in retrieved_docs])
+            messages.insert(0, {"role": "system", "content": f"Retrieved Context:\n{docs_context}"})
 
     async def ask(self, messages: List[Dict[str, str]]) -> ChatCompletionResponse:
         response: BaseMessage = await self.model.ainvoke(messages)

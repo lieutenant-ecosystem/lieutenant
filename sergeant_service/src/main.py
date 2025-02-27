@@ -45,6 +45,9 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
     messages: List[Dict[str, str]] = Sergeant.get_messages(request, sergeant)
 
     try:
+        if len(sergeant.indexes) > 0:
+            sergeant.add_context_from_indexes(messages)
+
         if request.stream:
             return sergeant.ask_stream(messages, request)
         else:
