@@ -16,6 +16,8 @@ class LLMConfig(BaseModel):
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
     developer_prompt: Optional[str] = "You are a helpful assistant."
+    indexes: List[str] = []
+
 
     @staticmethod
     def get_all() -> List["LLMConfig"]:
@@ -30,6 +32,7 @@ class Sergeant(BaseModel):
     parent_model_id: str
     developer_prompt: str
     model: ChatOpenAI
+    indexes: List[str] = []
 
     @staticmethod
     def _get_base_chat_model(llm_config: LLMConfig) -> ChatOpenAI:
@@ -50,7 +53,8 @@ class Sergeant(BaseModel):
                 name=llm_config.name,
                 parent_model_id=llm_config.parent_model_id,
                 developer_prompt=llm_config.developer_prompt,
-                model=chat_model
+                model=chat_model,
+                indexes=llm_config.indexes
             ))
 
         return sergeant_list
