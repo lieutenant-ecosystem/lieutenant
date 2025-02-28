@@ -230,3 +230,6 @@ spec:
         - podSelector:
             matchLabels:
               app: gateway
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0  # Allow egress to the internet
