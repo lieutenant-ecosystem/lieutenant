@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Download files
-ENVIRONMENT=${1:-main}
+ENVIRONMENT=${ENVIRONMENT:-main}
 sudo apt install curl -y
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/lieutenant.yml
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/gateway.yml
@@ -37,5 +37,9 @@ microk8s kubectl apply -f gateway.yml
 
 
 # Monitor the deployment
+microk8s kubectl describe pod -l app=lieutenant
+echo "---"
+echo "Waiting for Lieutenant's containers to be initialized"
+echo "---"
 microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
 microk8s kubectl logs -f -l app=lieutenant --all-containers=true
