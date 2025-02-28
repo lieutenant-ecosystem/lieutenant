@@ -21,7 +21,7 @@ def initialize_database():
     engine: Engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
 
     with engine.connect() as conn:
-        conn.execute(text(f"CREATE DATABASE \"{database_name}\""))
+        conn.execute(text(f"CREATE DATABASE IF NOT EXISTS \"{database_name}\""))
 
 
 class Embedding(BaseModel):
