@@ -40,6 +40,14 @@ if [ "$ENVIRONMENT" = "dev" ]; then
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | microk8s kubectl apply -f -
   microk8s kubectl apply -f dev/database.yml
+
+  counter=0
+  while ! nc -z localhost 5432; do
+    echo "Waiting for database to load for $counter seconds..."
+    sleep 1
+    ((counter++))
+  done
+  echo "Database port opened successfully in $counter seconds"
 fi
 
 ##  Lieutenant
