@@ -26,7 +26,7 @@ spec:
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: RAG_OPENAI_API_BASE_URL
-              value: "htt p://localhost:8001"
+              value: "http://localhost:8001"
             - name: AUDIO_STT_ENGINE
               value: "openai"
             - name: AUDIO_TTS_ENGINE
@@ -45,6 +45,8 @@ spec:
               value: "False"
             - name: ENABLE_RAG_WEB_SEARCH
               value: "True"
+            - name: TASK_MODEL_EXTERNAL
+              value: "GPT-4o Mini"
             - name: ENABLE_OLLAMA_API
               value: "False"
             - name: RAG_WEB_SEARCH_ENGINE
@@ -102,6 +104,7 @@ spec:
                   key: OPENAI_API_KEY
           ports:
             - containerPort: 8080
+
         - name: sergeant-service
           image: localhost:32000/sergeant_service:local
           imagePullPolicy: Always
@@ -121,6 +124,7 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: SENTRY_DSN
+
         - name: vector-embedding-service
           image: localhost:32000/vector_embedding_service:local
           imagePullPolicy: Always
