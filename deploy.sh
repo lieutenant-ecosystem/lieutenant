@@ -25,14 +25,16 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
-  --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}"
+  --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}" \
+  --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f lieutenant.yml
 
 # Gateway
 microk8s kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
-  --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
+  --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" \
+  --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f gateway.yml
 
 
