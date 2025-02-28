@@ -1,15 +1,19 @@
 #!/bin/bash
 
 # Download files
-ENV=${1:-main}
+ENVIRONMENT=${1:-main}
 sudo apt install curl -y
-curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENV/lieutenant.yml
-curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENV/gateway.yml
+curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/lieutenant.yml
+curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/gateway.yml
 
 # Install microk8s
-sudo snap install microk8s --classic
+if ! microk8s version &>/dev/null; then
+    sudo snap install microk8s --classic
+fi
 sudo usermod -a -G microk8s $USER
-newgrp microk8s
+if ! groups | grep -q "\bmicrok8s\b"; then
+  newgrp microk8s
+fi
 
 # Lieutenant
 microk8s kubectl create secret generic lieutenant-secrets \
@@ -30,3 +34,8 @@ microk8s kubectl create secret generic gateway-secrets \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}"
 microk8s kubectl apply -f gateway.yml
+
+
+# Monitor the deployment
+microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
+microk8s kubectl logs -f -l app=lieutenant --all-containers=true
