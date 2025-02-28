@@ -13,7 +13,7 @@ fi
 set -a; source .env_local; set +a
 
 # Resetting the environment
-microk8s kubectl delete deployments --all && microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume
+microk8s kubectl delete deployments --all
 docker rmi $(docker images -q)
 docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service" {print $2}' | xargs -r docker rmi -f
 
@@ -36,6 +36,7 @@ docker push localhost:32000/gateway:local
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
+  microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume   # Deletes the existing database data
   microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | microk8s kubectl apply -f -
