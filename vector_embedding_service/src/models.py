@@ -7,10 +7,21 @@ from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
 from pydantic import BaseModel, Field
+from sqlalchemy import make_url, create_engine, Engine, URL, text
 
 from src import common
 
 DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
+
+
+def initialize_database():
+    url: URL = make_url(os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"))
+    database_name: str = url.database
+    admin_url: URL = url.set(database="postgres")
+    engine: Engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+
+    with engine.connect() as conn:
+        conn.execute(text(f"CREATE DATABASE \"{database_name}\""))
 
 
 class Embedding(BaseModel):
@@ -88,3 +99,6 @@ class EmbeddingQuery(BaseModel):
     input: str
     index: str
     top_k: int = Field(default=10)
+
+
+initialize_database()
