@@ -9,6 +9,9 @@ if ! groups | grep -q "\bmicrok8s\b"; then
   newgrp microk8s
 fi
 
+# Set the environment variables
+set -a; source .env_local; set +a
+
 # Resetting the environment
 microk8s kubectl delete deployments --all && microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume
 docker rmi $(docker images -q)
