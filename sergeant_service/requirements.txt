@@ -18,3 +18,4 @@ pgvector
 sqlalchemy[asyncio]
 psycopg2-binary
 asyncpg
+lark

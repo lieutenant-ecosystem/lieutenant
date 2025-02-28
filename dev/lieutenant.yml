@@ -119,6 +119,11 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
+            - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
