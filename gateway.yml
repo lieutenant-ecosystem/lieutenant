@@ -17,6 +17,7 @@ spec:
       containers:
         - name: gateway
           image: ghcr.io/lieutenant-ecosystem/gateway:dev
+          imagePullPolicy: Always
           env:
             - name: CLOUDFLARE_TUNNEL_TOKEN
               valueFrom:
@@ -49,21 +50,24 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: gateway
+              app: lieutenant
         - podSelector:
             matchLabels:
-              app: lieutenant
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway
   egress:
     - to:
-        - podSelector:
-            matchLabels:
-              app: gateway
         - podSelector:
             matchLabels:
               app: lieutenant
         - podSelector:
             matchLabels:
               app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0  # Allow egress to the internet
