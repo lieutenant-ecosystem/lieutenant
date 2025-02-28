@@ -10,7 +10,7 @@ if ! groups | grep -q "\bmicrok8s\b"; then
 fi
 
 # Resetting the environment
-microk8s kubectl delete deployments --all
+microk8s kubectl delete deployments --all && microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume
 docker rmi $(docker images -q)
 docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service" {print $2}' | xargs -r docker rmi -f
 
