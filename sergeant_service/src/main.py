@@ -1,18 +1,16 @@
 import os
 import time
-import uuid
 from typing import List, Dict
 
 import sentry_sdk
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
-from langchain_core.messages import BaseMessage
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from src import common
-from src.sergeant import Sergeant, stream_response
 from src.models import ChatCompletionRequest, ChatCompletionResponse
+from src.sergeant import Sergeant
 
 start_up_time: int = int(time.time())
 
