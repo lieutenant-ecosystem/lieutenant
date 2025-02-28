@@ -49,7 +49,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: gateway
         - podSelector:
             matchLabels:
               app: lieutenant
@@ -57,10 +57,13 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: gateway
         - podSelector:
             matchLabels:
               app: lieutenant
+        - podSelector:
+            matchLabels:
+              app: postgres
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0  # Allow egress to the internet

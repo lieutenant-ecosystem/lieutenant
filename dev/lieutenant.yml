@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lieutenant
+  labels:
+    app: lieutenant
 spec:
   replicas: 1
   selector:
@@ -11,7 +13,9 @@ spec:
     metadata:
       labels:
         app: lieutenant
+        role: lieutenant
     spec:
+      hostNetwork: true  # Joins the Kubernetes network with the host's network
       containers:
         - name: open-webui
           image: localhost:32000/open_webui:local
@@ -20,9 +24,9 @@ spec:
             - name: ENVIRONMENT
               value: "DEV"
             - name: OPENAI_API_BASE_URL
-              value: "http://lieutenant-service:81"
+              value: "http://localhost:8000"
             - name: RAG_OPENAI_API_BASE_URL
-              value: "http://lieutenant-service:82"
+              value: "htt p://localhost:8001"
             - name: AUDIO_STT_ENGINE
               value: "openai"
             - name: AUDIO_TTS_ENGINE
@@ -45,36 +49,42 @@ spec:
               value: "False"
             - name: RAG_WEB_SEARCH_ENGINE
               value: "google_pse"
-            - name: GOOGLE_PSE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: GOOGLE_PSE_API_KEY
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: DATABASE_URL
             - name: GOOGLE_PSE_ENGINE_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: GOOGLE_PSE_ENGINE_ID
+                  optional: true
+            - name: GOOGLE_PSE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: GOOGLE_PSE_API_KEY
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: DATABASE_URL
+                  optional: true
             - name: MICROSOFT_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_ID
+                  optional: true
             - name: MICROSOFT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_SECRET
+                  optional: true
             - name: MICROSOFT_CLIENT_TENANT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_TENANT_ID
+                  optional: true
             - name: AUDIO_TTS_OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -106,16 +116,6 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: ANTHROPIC_API_KEY
-            - name: PPLX_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: PPLX_API_KEY
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
@@ -135,7 +135,6 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
-
             - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -146,16 +145,19 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: VECTOR_EMBEDDING_BASE_URL
+                  optional: true
             - name: VECTOR_EMBEDDING_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: VECTOR_EMBEDDING_API_KEY
+                  optional: true
             - name: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
+                  optional: true
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
@@ -168,6 +170,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: lieutenant-service
+  labels:
+    app: lieutenant
 spec:
   selector:
     app: lieutenant
@@ -190,11 +194,11 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: gateway-network-policy
+  name: lieutenant-network-policy
 spec:
   podSelector:
     matchLabels:
-      app: gateway
+      app: lieutenant
   policyTypes:
     - Ingress
     - Egress
@@ -202,15 +206,21 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: lieutenant
         - podSelector:
             matchLabels:
-              app: lieutenant
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway
   egress:
     - to:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: lieutenant
         - podSelector:
             matchLabels:
-              app: lieutenant
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway

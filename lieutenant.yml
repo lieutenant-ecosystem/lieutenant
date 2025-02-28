@@ -54,26 +54,31 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: GOOGLE_PSE_API_KEY
+                  optional: true
             - name: GOOGLE_PSE_ENGINE_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: GOOGLE_PSE_ENGINE_ID
+                  optional: true
             - name: MICROSOFT_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_ID
+                  optional: true
             - name: MICROSOFT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_SECRET
+                  optional: true
             - name: MICROSOFT_CLIENT_TENANT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_TENANT_ID
+                  optional: true
             - name: AUDIO_TTS_OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -105,16 +110,6 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: ANTHROPIC_API_KEY
-            - name: PPLX_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: PPLX_API_KEY
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
@@ -157,15 +152,21 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: gateway
         - podSelector:
             matchLabels:
               app: lieutenant
+        - podSelector:
+            matchLabels:
+              app: postgres
   egress:
     - to:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: gateway
         - podSelector:
             matchLabels:
               app: lieutenant
+        - podSelector:
+            matchLabels:
+              app: postgres

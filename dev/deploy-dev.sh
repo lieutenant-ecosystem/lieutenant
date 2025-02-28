@@ -33,8 +33,6 @@ docker push localhost:32000/gateway:local
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
-  POSTGRES_PASSWORD=samerandominsecurepassword
-  DATABASE_URL=postgresql://lieutenant:$POSTGRES_PASSWORD@postgres-service:5432/lieutenant-open_webui
   microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | microk8s kubectl apply -f -
@@ -45,8 +43,6 @@ fi
 microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=DATABASE_URL="${DATABASE_URL}" \
-  --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
-  --from-literal=PPLX_API_KEY="${PPLX_API_KEY}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
   --from-literal=GOOGLE_PSE_API_KEY="${GOOGLE_PSE_API_KEY}" \
   --from-literal=GOOGLE_PSE_ENGINE_ID="${GOOGLE_PSE_ENGINE_ID}" \
