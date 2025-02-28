@@ -2,7 +2,7 @@ numpy
 langchain
 langchain-community
 langchain-openai
-langchain-anthropic
+langchain_postgres
 openai
 requests
 uvicorn
@@ -14,3 +14,8 @@ pyyaml
 cerberus
 anthropic
 sentry-sdk[fastapi]
+pgvector
+sqlalchemy[asyncio]
+psycopg2-binary
+asyncpg
+lark

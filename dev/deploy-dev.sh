@@ -9,6 +9,9 @@ if ! groups | grep -q "\bmicrok8s\b"; then
   newgrp microk8s
 fi
 
+# Set the environment variables
+set -a; source .env_local; set +a
+
 # Resetting the environment
 microk8s kubectl delete deployments --all
 docker rmi $(docker images -q)
@@ -33,20 +36,25 @@ docker push localhost:32000/gateway:local
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
-  POSTGRES_PASSWORD=samerandominsecurepassword
-  DATABASE_URL=postgresql://lieutenant:$POSTGRES_PASSWORD@postgres-service:5432/lieutenant-open_webui
+  microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume   # Deletes the existing database data
   microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | microk8s kubectl apply -f -
   microk8s kubectl apply -f dev/database.yml
+
+  counter=0
+  while ! nc -z localhost 5432; do
+    echo "Waiting for database to load for $counter seconds..."
+    sleep 1
+    ((counter++))
+  done
+  echo "Database port opened successfully in $counter seconds"
 fi
 
 ##  Lieutenant
 microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=DATABASE_URL="${DATABASE_URL}" \
-  --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
-  --from-literal=PPLX_API_KEY="${PPLX_API_KEY}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
   --from-literal=GOOGLE_PSE_API_KEY="${GOOGLE_PSE_API_KEY}" \
   --from-literal=GOOGLE_PSE_ENGINE_ID="${GOOGLE_PSE_ENGINE_ID}" \
@@ -55,6 +63,7 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
   --from-literal=VECTOR_EMBEDDING_BASE_URL="${VECTOR_EMBEDDING_BASE_URL}" \
   --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
+  --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}" \
   --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f dev/lieutenant.yml
 

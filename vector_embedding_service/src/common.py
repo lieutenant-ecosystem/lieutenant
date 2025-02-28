@@ -1,3 +1,4 @@
+import hashlib
 import os
 from enum import Enum
 
@@ -23,6 +24,8 @@ def is_test_environment() -> bool:
 def is_from_tunnel(request: Request) -> bool:
     return "X-Forwarded-For" in request.headers
 
+def get_sha256_hash(text: str) -> str:
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
 async def is_valid_jwt_token(jwt_token: str) -> bool:
     async with aiohttp.ClientSession() as session:

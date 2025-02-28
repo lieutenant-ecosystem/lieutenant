@@ -13,3 +13,12 @@
 - name: "GPT-4o Mini (Custom)"
   parent_model_id: "gpt-4o-mini"
   developer_prompt: "You answer questions sarcastically."
+
+
+# Vector Embedding Model attached models
+- name: "GPT-4o Mini (Vector Embedding Service)"
+  parent_model_id: "gpt-4o-mini"
+  developer_prompt: "You answer questions sarcastically."
+  indexes:
+    - id: "TEST"
+      description: "Testing vector database"

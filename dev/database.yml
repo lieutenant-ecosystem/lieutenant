@@ -1,28 +1,3 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: postgres-volume
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/home/kavindu/data"  # Path on the host machine
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-volume-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,35 +13,40 @@ spec:
     metadata:
       labels:
         app: postgres
+        role: postgres
     spec:
+#      hostNetwork: true  # Joins the Kubernetes network with the host's network
       containers:
-      - name: postgres
-        image: postgres:latest
-        ports:
-          - containerPort: 5432
-        env:
-          - name: POSTGRES_DB
-            value: "lieutenant-open_webui"
-          - name: POSTGRES_USER
-            value: "lieutenant"
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-secrets
-                key: POSTGRES_PASSWORD
-        volumeMounts:
-          - mountPath: /var/lib/postgresql/data
-            name: postgres-storage
+        - name: postgres
+          image: pgvector/pgvector:pg17
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "lieutenant-open_webui"
+            - name: POSTGRES_USER
+              value: "lieutenant"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-volume-claim
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres-service
+  labels:
+    app: postgres
 spec:
   selector:
     app: postgres
@@ -75,3 +55,66 @@ spec:
       port: 5432
       targetPort: 5432
   type: ClusterIP
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: lieutenant
+        - podSelector:
+            matchLabels:
+              app: gateway
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: lieutenant
+        - podSelector:
+            matchLabels:
+              app: gateway
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-volume
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/kavindu/data"  # Path on the host machine
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-volume-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
