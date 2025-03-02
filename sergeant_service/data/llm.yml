@@ -9,16 +9,11 @@
 - name: "o1 Mini"
   parent_model_id: "o1-mini"
 
-# Custom models
-- name: "GPT-4o Mini (Custom)"
-  parent_model_id: "gpt-4o-mini"
-  developer_prompt: "You answer questions sarcastically."
-
 
 # Vector Embedding Model attached models
-- name: "Operation Prosperity Guardian"
+- name: "Notes"
   parent_model_id: "gpt-4o-mini"
   developer_prompt: "You answer questions with respect to the context given."
   indexes:
     - id: "HTTPBlobIntelligence"
-      description: "Personal documents"
+      description: "Notes"
