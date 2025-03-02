@@ -16,9 +16,9 @@
 
 
 # Vector Embedding Model attached models
-- name: "GPT-4o Mini (Vector Embedding Service)"
+- name: "Operation Prosperity Guardian"
   parent_model_id: "gpt-4o-mini"
-  developer_prompt: "You answer questions sarcastically."
+  developer_prompt: "You answer questions with respect to the context given."
   indexes:
-    - id: "TEST"
-      description: "Testing vector database"
+    - id: "HTTPBlobIntelligence"
+      description: "Personal documents"

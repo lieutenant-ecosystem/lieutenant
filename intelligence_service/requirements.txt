@@ -1,0 +1,9 @@
+aiohttp
+httpx
+requests
+uvicorn
+pydantic
+starlette
+fastapi
+sentry-sdk[fastapi]
+pyyaml

@@ -110,7 +110,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
-            - containerPort: 5678  # Debug port
           env:
             - name: ENVIRONMENT
               value: "DEV"
@@ -135,7 +134,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
-            - containerPort: 5679  # Debug port
           env:
             - name: ENVIRONMENT
               value: "DEV"
@@ -173,6 +171,15 @@ spec:
                   name: lieutenant-secrets
                   key: SENTRY_DSN
 
+        - name: intelligence-service
+          image: localhost:32000/intelligence_service:local
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          env:
+            - name: ENVIRONMENT
+              value: "DEV"
+
 ---
 
 apiVersion: v1
@@ -197,6 +204,10 @@ spec:
       protocol: TCP
       port: 82
       targetPort: 8001
+    - name: intelligence-service
+      protocol: TCP
+      port: 83
+      targetPort: 8002
 
 ---
 
