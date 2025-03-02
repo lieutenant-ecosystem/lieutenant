@@ -171,7 +171,7 @@ spec:
                   key: SENTRY_DSN
 
         - name: intelligence-service
-          image: localhost:32000/intelligence_service:local
+          image: ghcr.io/lieutenant-ecosystem/intelligence_service:local
           imagePullPolicy: Always
           ports:
             - containerPort: 8002
