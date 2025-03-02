@@ -15,7 +15,7 @@ set -a; source .env_local; set +a
 # Resetting the environment
 microk8s kubectl delete deployments --all
 docker rmi $(docker images -q)
-docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service" {print $2}' | xargs -r docker rmi -f
+docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service || $1=="intelligence_service" {print $2}' | xargs -r docker rmi -f
 
 # Enable the registry
 sudo microk8s enable registry
@@ -23,12 +23,14 @@ sudo microk8s enable registry
 # Build the images
 docker build -t localhost:32000/sergeant_service:local sergeant_service
 docker build -t localhost:32000/vector_embedding_service:local vector_embedding_service
+docker build -t localhost:32000/intelligence_service:local intelligence_service
 docker build -t localhost:32000/open_webui:local open_webui
 docker build -t localhost:32000/gateway:local gateway
 
 # Push the images to the registry
 docker push localhost:32000/sergeant_service:local
 docker push localhost:32000/vector_embedding_service:local
+docker push localhost:32000/intelligence_service:local
 docker push localhost:32000/open_webui:local
 docker push localhost:32000/gateway:local
 
@@ -74,9 +76,6 @@ microk8s kubectl create secret generic gateway-secrets \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" \
   --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f dev/gateway.yml
-
-# Port forward the database port
-kubectl port-forward svc/postgres-service 5432:5432
 
 # Tail the logs
 microk8s kubectl describe pod -l app=lieutenant

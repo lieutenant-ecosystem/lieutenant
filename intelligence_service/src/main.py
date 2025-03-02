@@ -1,15 +1,16 @@
 import os
-import time
-from typing import Dict, Any, List
+from contextlib import asynccontextmanager
+from typing import List, Generator
 
 import sentry_sdk
-from fastapi import FastAPI, Depends, Body
+from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBearer
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from src import common
-from src.models import EmbeddingQuery, Embedding
+from src.models import BaseIntelligenceQuery, BaseIntelligence
+from src.officer.http_blob import HTTPBlobIntelligence, HTTPBlob
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(
@@ -17,7 +18,15 @@ if os.getenv("SENTRY_DSN"):
         traces_sample_rate=1.0,
         _experiments={"continuous_profiling_auto_start": True, },
     )
-app = FastAPI(title="Vector Embedding Service API")
+
+
+@asynccontextmanager
+async def update_intelligence(app: FastAPI):
+    await HTTPBlob.update()
+    yield
+
+
+app = FastAPI(title="Vector Embedding Service API", lifespan=update_intelligence)
 
 
 class AuthenticateToken(HTTPBearer):
@@ -33,22 +42,17 @@ class AuthenticateToken(HTTPBearer):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
 
-@app.post("/database", dependencies=[Depends(AuthenticateToken())])
-async def upsert_embedding(embedding: Embedding) -> None:
-    embedding.upsert()
+@app.post("/http_blob", dependencies=[Depends(AuthenticateToken())])
+async def upsert_http_blob(intelligence: HTTPBlobIntelligence) -> None:
+    await HTTPBlob.upsert(intelligence)
 
 
-@app.get("/database", dependencies=[Depends(AuthenticateToken())])
-async def query(embedding_query: EmbeddingQuery) -> List[Embedding]:
-    return Embedding.query(embedding_query.input, embedding_query.index)
-
-
-@app.post("/embeddings", dependencies=[Depends(AuthenticateToken())])
-async def get_embeddings(request_body: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
-    return await Embedding.get_raw_embedding(request_body["input"], request_body["model"])
+@app.get("/http_blob", dependencies=[Depends(AuthenticateToken())])
+async def get_http_blob(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
+    return await HTTPBlob.get(intelligence_query.query)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

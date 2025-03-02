@@ -15,7 +15,7 @@ spec:
         app: postgres
         role: postgres
     spec:
-#      hostNetwork: true  # Joins the Kubernetes network with the host's network
+      hostNetwork: true  # Joins the Kubernetes network with the host's network
       containers:
         - name: postgres
           image: pgvector/pgvector:pg17
