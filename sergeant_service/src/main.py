@@ -1,20 +1,16 @@
-import json
 import os
 import time
-import uuid
-from typing import Optional, List, Dict, AsyncGenerator
+from typing import List, Dict
 
 import sentry_sdk
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import BaseMessage
-from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from src import common
-from src.sergeant import LLM, Sergeant
+from src.models import ChatCompletionRequest, ChatCompletionResponse
+from src.sergeant import Sergeant
 
 start_up_time: int = int(time.time())
 
@@ -39,53 +35,21 @@ class AuthenticateToken(HTTPBearer):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
 
-class Message(BaseModel):
-    role: str
-    content: str
-
-
-class ChatCompletionRequest(BaseModel):
-    model: LLM
-    messages: List[Message]
-    max_tokens: Optional[int] = Field(default=4096, le=8192)
-    temperature: Optional[float] = Field(default=0.2, ge=0, le=2)
-    stream: Optional[bool] = False
-
-
-async def stream_response(llm: BaseChatModel, messages: List[Dict], request: ChatCompletionRequest) -> AsyncGenerator[str, None]:
-    async for chunk in llm.astream(messages):
-        token = chunk.content
-        if token:
-            yield f"data: {json.dumps({
-                'id': str(uuid.uuid4()),
-                'object': 'chat.completion.chunk',
-                'created': int(time.time()),
-                'model': request.model.value,
-                'choices': [{'delta': {'content': token}}],
-            })}\n\n"
-    yield "data: [DONE]\n\n"
-
-
 @app.post("/chat/completions", dependencies=[Depends(AuthenticateToken())], response_model=None)
-async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | Dict:
-    messages: List[Dict[str, str]] = [{"role": m.role, "content": m.content} for m in request.messages]
-    llm: LLM = next(filter(lambda l: l == request.model, list(LLM)))
-    sergeant: Sergeant = Sergeant.get(llm)
+async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse | ChatCompletionResponse:
+    sergeant: Sergeant = Sergeant.get(request.model)
     sergeant.model.temperature = request.temperature
     sergeant.model.max_tokens = request.max_tokens
+    messages: List[Dict[str, str]] = Sergeant.get_messages(request, sergeant)
 
     try:
-        if request.stream:
-            return StreamingResponse(stream_response(sergeant.model, messages, request), media_type="text/event-stream")
+        if len(sergeant.llm_config.index_list) > 0:
+            sergeant.add_context_from_indexes(messages)
 
-        response: BaseMessage = await sergeant.model.ainvoke(messages)
-        return {
-            "id": str(uuid.uuid4()),
-            "object": "chat.completion",
-            "created": int(time.time()),
-            "model": request.model.value,
-            "choices": [{"message": {"role": "assistant", "content": response.content}}],
-        }
+        if request.stream:
+            return sergeant.ask_stream(messages, request)
+        else:
+            return await sergeant.ask(messages)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -95,7 +59,7 @@ async def chat_completions(request: ChatCompletionRequest) -> StreamingResponse 
 async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
     return {
         "object": "list",
-        "data": [{"id": sergeant.llm.value, "object": "model", "created": start_up_time, "owned_by": "N/A"} for sergeant in Sergeant.get_all()]
+        "data": [{"id": sergeant.name, "object": "model", "created": start_up_time, "owned_by": "N/A"} for sergeant in Sergeant.get_all()]
     }
 
 

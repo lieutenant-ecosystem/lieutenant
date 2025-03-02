@@ -1,3 +1,4 @@
+import hashlib
 import os
 from enum import Enum
 
@@ -7,8 +8,6 @@ from starlette.requests import Request
 
 
 class Constants(Enum):
-    DATA_PATH = f"data/"
-    LLM_YAML_PATH = f"{DATA_PATH}llm.yml"
     OPEN_WEBUI_PORT = "80"
     OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"
 
@@ -23,6 +22,10 @@ def is_test_environment() -> bool:
 
 def is_from_tunnel(request: Request) -> bool:
     return "X-Forwarded-For" in request.headers
+
+
+def get_sha256_hash(text: str) -> str:
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
 
 async def is_valid_jwt_token(jwt_token: str) -> bool:

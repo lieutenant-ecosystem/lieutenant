@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lieutenant
+  labels:
+    app: lieutenant
 spec:
   replicas: 1
   selector:
@@ -11,15 +13,19 @@ spec:
     metadata:
       labels:
         app: lieutenant
+        role: lieutenant
     spec:
       containers:
         - name: open-webui
           image: ghcr.io/lieutenant-ecosystem/open_webui:latest
+          imagePullPolicy: Always
           env:
             - name: ENVIRONMENT
               value: "PRODUCTION"
             - name: OPENAI_API_BASE_URL
-              value: "http://localhost:8000"
+              value: "http://lieutenant-service:81"
+            - name: RAG_OPENAI_API_BASE_URL
+              value: "http://lieutenant-service:82"
             - name: AUDIO_STT_ENGINE
               value: "openai"
             - name: AUDIO_TTS_ENGINE
@@ -38,40 +44,48 @@ spec:
               value: "False"
             - name: ENABLE_RAG_WEB_SEARCH
               value: "True"
+            - name: TASK_MODEL_EXTERNAL
+              value: "GPT-4o Mini"
             - name: ENABLE_OLLAMA_API
               value: "False"
             - name: RAG_WEB_SEARCH_ENGINE
               value: "google_pse"
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: DATABASE_URL
-            - name: GOOGLE_PSE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: GOOGLE_PSE_API_KEY
             - name: GOOGLE_PSE_ENGINE_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: GOOGLE_PSE_ENGINE_ID
+                  optional: true
+            - name: GOOGLE_PSE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: GOOGLE_PSE_API_KEY
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: DATABASE_URL
+                  optional: true
             - name: MICROSOFT_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_ID
+                  optional: true
             - name: MICROSOFT_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_SECRET
+                  optional: true
             - name: MICROSOFT_CLIENT_TENANT_ID
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: MICROSOFT_CLIENT_TENANT_ID
+                  optional: true
             - name: AUDIO_TTS_OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -89,11 +103,12 @@ spec:
                   key: OPENAI_API_KEY
           ports:
             - containerPort: 8080
+
         - name: sergeant-service
           image: ghcr.io/lieutenant-ecosystem/sergeant_service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
-            - containerPort: 5678  # Debug port
           env:
             - name: ENVIRONMENT
               value: "PRODUCTION"
@@ -102,26 +117,76 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
-            - name: ANTHROPIC_API_KEY
+            - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
-                  key: ANTHROPIC_API_KEY
-            - name: PPLX_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: lieutenant-secrets
-                  key: PPLX_API_KEY
+                  key: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: SENTRY_DSN
+
+        - name: vector-embedding-service
+          image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:beta
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+          env:
+            - name: ENVIRONMENT
+              value: "PRODUCTION"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_API_KEY
+            - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
+            - name: VECTOR_EMBEDDING_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_BASE_URL
+                  optional: true
+            - name: VECTOR_EMBEDDING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_API_KEY
+                  optional: true
+            - name: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
+                  optional: true
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: SENTRY_DSN
+
+        - name: intelligence-service
+          image: ghcr.io/lieutenant-ecosystem/intelligence_service:beta
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          env:
+            - name: ENVIRONMENT
+              value: "PRODUCTION"
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: lieutenant-service
+  labels:
+    app: lieutenant
 spec:
   selector:
     app: lieutenant
@@ -134,19 +199,25 @@ spec:
       protocol: TCP
       port: 81
       targetPort: 8000
-    - name: sergeant-service-debug
+    - name: vector-embedding-service
       protocol: TCP
-      port: 5678
-      targetPort: 5678
+      port: 82
+      targetPort: 8001
+    - name: intelligence-service
+      protocol: TCP
+      port: 83
+      targetPort: 8002
+
 ---
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: gateway-network-policy
+  name: lieutenant-network-policy
 spec:
   podSelector:
     matchLabels:
-      app: gateway
+      app: lieutenant
   policyTypes:
     - Ingress
     - Egress
@@ -154,15 +225,24 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: lieutenant
         - podSelector:
             matchLabels:
-              app: lieutenant
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway
   egress:
     - to:
         - podSelector:
             matchLabels:
-              app: gateway-client
+              app: lieutenant
         - podSelector:
             matchLabels:
-              app: lieutenant
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app: gateway
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0  # Allow egress to the internet

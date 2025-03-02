@@ -1,0 +1,3 @@
+- name: "About Lieutenant"
+  source: "https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant-ecosystem.github.io/refs/heads/main/docs/home.md"
+  description: "Details about Lieutenant"
