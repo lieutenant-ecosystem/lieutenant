@@ -129,7 +129,7 @@ spec:
                   key: SENTRY_DSN
 
         - name: vector-embedding-service
-          image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:beta
+          image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
@@ -171,7 +171,7 @@ spec:
                   key: SENTRY_DSN
 
         - name: intelligence-service
-          image: ghcr.io/lieutenant-ecosystem/intelligence_service:beta
+          image: ghcr.io/lieutenant-ecosystem/intelligence_service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8002
