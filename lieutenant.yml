@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_BASE_URL
               value: "http://lieutenant-service:81"
             - name: RAG_OPENAI_API_BASE_URL
@@ -111,7 +111,7 @@ spec:
             - containerPort: 8000
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -135,7 +135,7 @@ spec:
             - containerPort: 8001
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -170,6 +170,15 @@ spec:
                   name: lieutenant-secrets
                   key: SENTRY_DSN
 
+        - name: intelligence-service
+          image: localhost:32000/intelligence_service:local
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          env:
+            - name: ENVIRONMENT
+              value: "BETA"
+
 ---
 
 apiVersion: v1
@@ -194,6 +203,10 @@ spec:
       protocol: TCP
       port: 82
       targetPort: 8001
+    - name: intelligence-service
+      protocol: TCP
+      port: 83
+      targetPort: 8002
 
 ---
 
