@@ -15,5 +15,5 @@
   parent_model_id: "gpt-4o-mini"
   developer_prompt: "You answer questions with respect to the context given."
   indexes:
-    - id: "HTTPBlobIntelligence"
+    - id: "Notes"
       description: "Notes"

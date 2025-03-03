@@ -35,7 +35,7 @@ class Embedding(BaseModel):
 
     def upsert(self) -> None:
         if self.id is None:
-            self.id = common.get_sha256_hash(self.content)
+            self.id = common.get_sha256_hash(self.source)
 
         document: Document = Document(
             page_content=self.content,
