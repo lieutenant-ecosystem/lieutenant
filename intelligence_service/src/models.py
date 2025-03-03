@@ -14,6 +14,7 @@ class BaseIntelligenceQuery(BaseModel):
 
 class BaseIntelligence(BaseModel, ABC):
     id: Optional[str] = None
+    index: str
     source: str
     content: Optional[str] = None
     description: Optional[str] = None
@@ -28,7 +29,7 @@ class BaseIntelligence(BaseModel, ABC):
             self.id = common.get_sha256_hash(self.content)
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(f"{Constants.VECTOR_EMBEDDING_SERVICE_URL.value}/database", json={"source": self.source, "content": self.content, "index": self.__class__.__name__}) as response:
+            async with session.post(f"{Constants.VECTOR_EMBEDDING_SERVICE_URL.value}/database", json={"source": self.source, "content": self.content, "index": self.index}) as response:
                 response.raise_for_status()
 
 
