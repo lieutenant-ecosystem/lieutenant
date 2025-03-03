@@ -5,13 +5,15 @@ POD_NAME=$(microk8s kubectl get pods -l app=lieutenant -o jsonpath="{.items[0].m
 CONTAINER_NAME="intelligence-service"
 
 send_request() {
-  local description="$1"
-  local source="$2"
+  local index="$1"
+  local description="$2"
+  local source="$3"
 
   payload=$(jq -n --arg id "optional-id" \
                  --arg description "$description" \
                  --arg source "$source" \
-                 '{id: $id, description: $description, source: $source}')
+                 --arg index "$index" \
+                 '{id: $id, description: $description, source: $source, index: $index}')
   escaped_payload=$(printf "%s" "$payload" | sed "s/'/'\\''/g")
   remote_cmd="curl -X POST \"http://0.0.0.0:8002/http_blob\" \
     -H \"Content-Type: application/json\" \
@@ -21,4 +23,7 @@ send_request() {
   microk8s kubectl exec -it "$POD_NAME" -c "$CONTAINER_NAME" -- sh -c "$remote_cmd"
 }
 
-send_request "'$YOUR_DESCRIPTION'" "'$YOUR_SOURCE_URL'"
+INDEX='Notes'
+DESCRIPTION='Details about the user'
+SOURCE='URL'
+send_request "$INDEX" "$DESCRIPTION" "$SOURCE"

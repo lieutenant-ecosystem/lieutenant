@@ -10,6 +10,7 @@ from src.models import BaseOfficer, BaseIntelligence
 class HTTPBlobConfig(BaseModel):
     name: str
     source: str
+    index: str
     description: str
 
     @staticmethod
@@ -31,7 +32,7 @@ class HTTPBlob(BaseOfficer):
     async def update() -> None:
         for http_blob_config in HTTPBlobConfig.get():
             print(f"Updating intelligence for: {http_blob_config.name}")
-            intelligence: HTTPBlobIntelligence = HTTPBlobIntelligence(source=http_blob_config.source, description=http_blob_config.description) # type: ignore[arg-type]
+            intelligence: HTTPBlobIntelligence = HTTPBlobIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index) # type: ignore[arg-type]
             await HTTPBlob.upsert(intelligence)
             print(f"Intelligence updated for: {http_blob_config.name}")
 
