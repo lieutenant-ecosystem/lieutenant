@@ -14,7 +14,7 @@ from src import common
 DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 
 
-def initialize_database():
+def initialize_database() -> None:
     url: URL = make_url(os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"))
     database_name: str = url.database
     admin_url: URL = url.set(database="postgres")

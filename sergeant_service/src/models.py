@@ -22,7 +22,7 @@ class ChatCompletionRequest(BaseModel):
 class ChatCompletionResponse(BaseModel):
     id: str = Field(default_factory=lambda a: str(uuid.uuid4()))
     object: str = "chat.completion"
-    created: int = Field(default_factory=lambda a: time.time())
+    created: float = Field(default_factory=lambda a: time.time())
     model: str
     choices: List[Dict[str, Any]]
 

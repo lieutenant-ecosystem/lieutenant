@@ -1,0 +1,4 @@
+- name: "Lieutenant's Codebase"
+  source: "https://codeload.github.com/lieutenant-ecosystem/lieutenant/zip/refs/heads/main"
+  index: "Lieutenant"
+  description: "Lieutenant's Codebase"
