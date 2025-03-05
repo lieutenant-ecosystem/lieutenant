@@ -21,20 +21,8 @@ class HTTPBlobConfig(BaseModel):
         return [HTTPBlobConfig(**raw_data) for raw_data in raw_data_list]
 
 
-class HTTPBlobIntelligence(BaseIntelligence):
-    def __init__(self, **kwargs: Dict[str, Any]):
-        super().__init__(**kwargs)
-
-
 class HTTPBlob(BaseOfficer):
 
-    @staticmethod
-    async def update() -> None:
-        for http_blob_config in HTTPBlobConfig.get():
-            print(f"Updating intelligence for: {http_blob_config.name}")
-            intelligence: HTTPBlobIntelligence = HTTPBlobIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index) # type: ignore[arg-type]
-            await HTTPBlob.upsert(intelligence)
-            print(f"Intelligence updated for: {http_blob_config.name}")
 
     @staticmethod
     async def _get_file_content(url: str) -> str:
@@ -46,8 +34,14 @@ class HTTPBlob(BaseOfficer):
         return data.decode("utf-8")
 
     @staticmethod
+    async def update() -> None:
+        for http_blob_config in HTTPBlobConfig.get():
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            await HTTPBlob.upsert(intelligence)
+
+    @staticmethod
     async def upsert(intelligence: BaseIntelligence) -> None:
-        if not isinstance(intelligence, HTTPBlobIntelligence):
+        if not isinstance(intelligence, BaseIntelligence):
             raise ValueError("The data is not valid: " + intelligence.model_dump_json())
 
         content: str = await HTTPBlob._get_file_content(intelligence.source)

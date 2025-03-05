@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from typing import List, Generator
+from typing import List, Generator, AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI, Depends
@@ -10,7 +10,8 @@ from starlette.requests import Request
 
 from src import common
 from src.models import BaseIntelligenceQuery, BaseIntelligence
-from src.officer.http_blob import HTTPBlobIntelligence, HTTPBlob
+from src.officer.http_archive import HTTPArchive
+from src.officer.http_blob import BaseIntelligence, HTTPBlob
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(
@@ -21,8 +22,9 @@ if os.getenv("SENTRY_DSN"):
 
 
 @asynccontextmanager
-async def update_intelligence(app: FastAPI):
+async def update_intelligence(app: FastAPI) -> AsyncGenerator:
     await HTTPBlob.update()
+    await HTTPArchive.update()
     yield
 
 
@@ -43,13 +45,23 @@ class AuthenticateToken(HTTPBearer):
 
 
 @app.post("/http_blob", dependencies=[Depends(AuthenticateToken())])
-async def upsert_http_blob(intelligence: HTTPBlobIntelligence) -> None:
+async def upsert_http_blob(intelligence: BaseIntelligence) -> None:
     await HTTPBlob.upsert(intelligence)
 
 
 @app.get("/http_blob", dependencies=[Depends(AuthenticateToken())])
 async def get_http_blob(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
-    return await HTTPBlob.get(intelligence_query.query)
+    return await HTTPBlob.get(intelligence_query.query, intelligence_query.index)
+
+
+@app.post("/http_archive", dependencies=[Depends(AuthenticateToken())])
+async def upsert_http_archive(intelligence: BaseIntelligence) -> None:
+    await HTTPArchive.upsert(intelligence)
+
+
+@app.get("/http_archive", dependencies=[Depends(AuthenticateToken())])
+async def get_http_archive(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
+    return await HTTPArchive.get(intelligence_query.query, intelligence_query.index)
 
 
 if __name__ == "__main__":
