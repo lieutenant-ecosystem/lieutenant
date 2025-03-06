@@ -12,8 +12,9 @@ from starlette.requests import Request
 class Constants(Enum):
     OPEN_WEBUI_PORT = "80"
     OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"
-    VECTOR_EMBEDDING_SERVICE_PORT = "82" #    82/8001
-    VECTOR_EMBEDDING_SERVICE_URL = f"http://lieutenant-service:{VECTOR_EMBEDDING_SERVICE_PORT}"
+    VECTOR_EMBEDDING_SERVICE_HOST = "lieutenant-service"
+    VECTOR_EMBEDDING_SERVICE_PORT = "82"  # 82/8001
+    VECTOR_EMBEDDING_SERVICE_URL = f"http://{VECTOR_EMBEDDING_SERVICE_HOST}:{VECTOR_EMBEDDING_SERVICE_PORT}"
 
 
 def is_production_environment() -> bool:
