@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from typing import List, Generator, AsyncGenerator
+from typing import List, AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI, Depends
@@ -9,7 +9,8 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from src import common
-from src.models import BaseIntelligenceQuery, BaseIntelligence
+from src.common import Constants
+from src.models import BaseIntelligenceQuery
 from src.officer.http_archive import HTTPArchive
 from src.officer.http_blob import BaseIntelligence, HTTPBlob
 
@@ -23,6 +24,7 @@ if os.getenv("SENTRY_DSN"):
 
 @asynccontextmanager
 async def update_intelligence(app: FastAPI) -> AsyncGenerator:
+    await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_HOST.value, int(Constants.VECTOR_EMBEDDING_SERVICE_PORT.value))
     await HTTPBlob.update()
     await HTTPArchive.update()
     yield
