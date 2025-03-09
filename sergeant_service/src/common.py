@@ -10,7 +10,7 @@ class Constants(Enum):
     DATA_PATH = f"data/"
     LLM_YAML_PATH = f"{DATA_PATH}llm.yml"
     OPEN_WEBUI_PORT = "80"
-    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"
+    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"  # TODO: Change to an environmental variable
 
 
 def is_production_environment() -> bool:
