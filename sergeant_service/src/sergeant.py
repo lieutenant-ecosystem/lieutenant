@@ -124,7 +124,8 @@ class Sergeant(BaseModel):
         return ChatOpenAI(
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens
+            max_tokens=llm_config.max_tokens,
+            base_url=os.getenv("OPENAI_API_BASE_URL")
         )
 
     @staticmethod
