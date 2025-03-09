@@ -154,7 +154,7 @@ class Sergeant(BaseModel):
         for message in request.messages:  # type: ignore[attr-defined]
             is_developer_prompt = message.role == "system" or message.role == "developer"
             if is_developer_prompt:
-                role: str = "developer"
+                role: str = "user" if "o1" in str(request.model).lower() or "reason" in str(request.model).lower() else "developer"  # TODO: This is a known bug with o1-mini
                 content: str = f"{sergeant.developer_prompt}\n---\n{message.content}"
             else:
                 role = message.role
