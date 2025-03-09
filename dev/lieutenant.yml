@@ -23,6 +23,8 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
+            - name: WEBUI_NAME
+              value: "Lieutenant"
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: RAG_OPENAI_API_BASE_URL
@@ -35,6 +37,8 @@ spec:
               value: "whisper-1"
             - name: RAG_EMBEDDING_ENGINE
               value: "openai"
+            - name: ENABLE_EVALUATION_ARENA_MODELS
+              value: "False"
             - name: RAG_EMBEDDING_MODEL
               value: "text-embedding-3-small"
             - name: ENABLE_RAG_WEB_SEARCH
@@ -43,8 +47,6 @@ spec:
               value: "True"
             - name: ENABLE_LOGIN_FORM
               value: "False"
-            - name: TASK_MODEL_EXTERNAL
-              value: "GPT-4o Mini"
             - name: ENABLE_OLLAMA_API
               value: "False"
             - name: DATABASE_URL
@@ -102,6 +104,16 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
+            - name: OPENAI_COMPATIBLE_API_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_COMPATIBLE_API_BASE_URL
+            - name: OPENAI_COMPATIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_COMPATIBLE_API_KEY
             - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -126,6 +138,11 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
+            - name: OPENAI_COMPATIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_COMPATIBLE_API_KEY
             - name: OPENAI_COMPATIBLE_API_BASE_URL
               valueFrom:
                 secretKeyRef:

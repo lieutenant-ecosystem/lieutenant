@@ -59,6 +59,7 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=DATABASE_URL="${DATABASE_URL}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
   --from-literal=OPENAI_COMPATIBLE_API_BASE_URL="${OPENAI_COMPATIBLE_API_BASE_URL}" \
+  --from-literal=OPENAI_COMPATIBLE_API_KEY="${OPENAI_COMPATIBLE_API_KEY}" \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
