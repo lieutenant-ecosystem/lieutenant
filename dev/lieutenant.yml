@@ -126,6 +126,11 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: OPENAI_API_KEY
+            - name: OPENAI_COMPATIBLE_API_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: OPENAI_COMPATIBLE_API_BASE_URL
             - name: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
               valueFrom:
                 secretKeyRef:

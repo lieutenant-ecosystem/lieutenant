@@ -125,7 +125,7 @@ class Sergeant(BaseModel):
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
             max_tokens=llm_config.max_tokens,
-            base_url=os.getenv("OPENAI_API_BASE_URL")
+            base_url=os.getenv("OPENAI_COMPATIBLE_API_BASE_URL")
         )
 
     @staticmethod
