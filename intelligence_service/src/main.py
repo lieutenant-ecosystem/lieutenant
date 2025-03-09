@@ -86,4 +86,4 @@ async def upsert_http_archive(intelligence: BaseIntelligence) -> None:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8010, log_level="debug" if common.is_test_environment() else "info")
+    uvicorn.run(app, host="0.0.0.0", port=8002, log_level="debug" if common.is_test_environment() else "info")
