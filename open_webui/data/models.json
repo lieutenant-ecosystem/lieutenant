@@ -2,17 +2,17 @@
   {
     "id": "GPT-4o",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "GPT-4o",
     "openai": {
       "id": "GPT-4o",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -40,23 +40,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558547,
-    "created_at": 1741558547
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Microsoft Phi-4",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Microsoft Phi-4",
     "openai": {
       "id": "Microsoft Phi-4",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -67,7 +67,11 @@
         "citations": true
       },
       "suggestion_prompts": null,
-      "tags": []
+      "tags": [
+        {
+          "name": "Multimodal"
+        }
+      ]
     },
     "access_control": {
       "read": {
@@ -80,23 +84,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558567,
-    "created_at": 1741558567
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Llama 3.1 405B Instruct",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Llama 3.1 405B Instruct",
     "openai": {
       "id": "Llama 3.1 405B Instruct",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -120,23 +124,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558547,
-    "created_at": 1741558547
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Llama 3.3 (70B)",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Llama 3.3 (70B)",
     "openai": {
       "id": "Llama 3.3 (70B)",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -160,23 +164,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558547,
-    "created_at": 1741558547
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Codestral",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Codestral",
     "openai": {
       "id": "Codestral",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -200,23 +204,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558547,
-    "created_at": 1741558547
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Mistral Large",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Mistral Large",
     "openai": {
       "id": "Mistral Large",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -240,23 +244,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558547,
-    "created_at": 1741558547
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Notes",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Notes",
     "openai": {
       "id": "Notes",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -280,23 +284,23 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558587,
-    "created_at": 1741558587
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   },
   {
     "id": "Lieutenant's Code",
     "object": "model",
-    "created": 1741558511,
+    "created": 1741562375,
     "owned_by": "openai",
     "name": "Lieutenant's Code",
     "openai": {
       "id": "Lieutenant's Code",
       "object": "model",
-      "created": 1741558511,
+      "created": 1741562375,
       "owned_by": "N/A"
     },
     "urlIdx": 0,
-    "user_id": "ad886648-a031-4448-a6a5-7c4d6a726aa1",
+    "user_id": "97d5b279-f23a-433c-a6ed-55c531b1981d",
     "base_model_id": null,
     "params": {},
     "meta": {
@@ -320,7 +324,7 @@
       }
     },
     "is_active": true,
-    "updated_at": 1741558580,
-    "created_at": 1741558580
+    "updated_at": 1741563412,
+    "created_at": 1741563412
   }
 ]
