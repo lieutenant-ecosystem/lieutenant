@@ -43,5 +43,5 @@ microk8s kubectl describe pod -l app=lieutenant
 echo "---"
 echo "Waiting for Lieutenant's containers to be initialized"
 echo "---"
-microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
+microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=600s
 microk8s kubectl logs -f -l app=lieutenant --all-containers=true
