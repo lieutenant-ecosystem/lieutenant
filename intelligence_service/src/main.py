@@ -1,8 +1,13 @@
+import logging
 import os
 from contextlib import asynccontextmanager
+from logging import Logger
 from typing import List, AsyncGenerator
 
 import sentry_sdk
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from cron_descriptor import get_description
 from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBearer
 from starlette.exceptions import HTTPException
@@ -10,7 +15,7 @@ from starlette.requests import Request
 
 from src import common
 from src.common import Constants
-from src.models import BaseIntelligenceQuery
+from src.models import BaseOfficer
 from src.officer.http_archive import HTTPArchive
 from src.officer.http_blob import BaseIntelligence, HTTPBlob
 
@@ -21,12 +26,29 @@ if os.getenv("SENTRY_DSN"):
         _experiments={"continuous_profiling_auto_start": True, },
     )
 
+scheduler = AsyncIOScheduler()
+logging.basicConfig(level=logging.DEBUG if common.is_test_environment() else logging.INFO,
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger: Logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def update_intelligence(app: FastAPI) -> AsyncGenerator:
     await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_HOST.value, int(Constants.VECTOR_EMBEDDING_SERVICE_PORT.value))
-    await HTTPBlob.update()
-    await HTTPArchive.update()
+
+    for scheduled_task in HTTPBlob.get_scheduled_tasks() + HTTPArchive.get_scheduled_tasks():
+        scheduler.add_job(
+            scheduled_task.update_func,
+            trigger=CronTrigger.from_crontab(scheduled_task.update_schedule),
+            id=scheduled_task.name,
+            name=scheduled_task.name,
+            replace_existing=True
+        )
+        logger.debug(f"Added a task into the scheduler | {scheduled_task.name} | {scheduled_task.update_schedule} | {get_description(scheduled_task.update_schedule)}")
+    scheduler.start()
+
+    await HTTPBlob.update_on_startup()
+    await HTTPArchive.update_on_startup()
     yield
 
 
@@ -46,14 +68,14 @@ class AuthenticateToken(HTTPBearer):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
 
+@app.get("/", dependencies=[Depends(AuthenticateToken())])
+async def get(query: str, index: str) -> List[BaseIntelligence]:
+    return await BaseOfficer.get(query, index)
+
+
 @app.post("/http_blob", dependencies=[Depends(AuthenticateToken())])
 async def upsert_http_blob(intelligence: BaseIntelligence) -> None:
     await HTTPBlob.upsert(intelligence)
-
-
-@app.get("/http_blob", dependencies=[Depends(AuthenticateToken())])
-async def get_http_blob(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
-    return await HTTPBlob.get(intelligence_query.query, intelligence_query.index)
 
 
 @app.post("/http_archive", dependencies=[Depends(AuthenticateToken())])
@@ -61,12 +83,7 @@ async def upsert_http_archive(intelligence: BaseIntelligence) -> None:
     await HTTPArchive.upsert(intelligence)
 
 
-@app.get("/http_archive", dependencies=[Depends(AuthenticateToken())])
-async def get_http_archive(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
-    return await HTTPArchive.get(intelligence_query.query, intelligence_query.index)
-
-
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8002, log_level="debug" if common.is_test_environment() else "info")

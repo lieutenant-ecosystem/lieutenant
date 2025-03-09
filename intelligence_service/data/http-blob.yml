@@ -2,3 +2,5 @@
   source: "https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant-ecosystem.github.io/refs/heads/main/docs/home.md"
   index: "Lieutenant"
   description: "Details about Lieutenant"
+  update_schedule: "0 0 1 JAN *"                         # https://crontab.guru/
+  update_on_start_up: true

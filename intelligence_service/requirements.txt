@@ -7,3 +7,5 @@ starlette
 fastapi
 sentry-sdk[fastapi]
 pyyaml
+apscheduler
+cron-descriptor

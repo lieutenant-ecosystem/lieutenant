@@ -1,0 +1,33 @@
+[
+  {
+    "id": "lieutenant",
+    "user_id": "2091e4b9-992d-4d03-a539-f387dd58a611",
+    "name": "Lieutenant",
+    "content": "from typing import Awaitable, Callable, Any, List\n\nimport aiohttp\n\nBASE_URL: str = \"http://lieutenant-service:82\"\n\n\nclass Intelligence:\n    id: str\n    index: str\n    source: str\n    content: str\n\n    def __str__(self) -> str:\n        return (\n            f\"---\"\n            f\"\\n# Source\"\n            f\"\\n{self.source}\"\n            f\"\\n\\n# Content\"\n            f\"\\n{self.content}\"\n            f\"\\n---\"\n        )\n\n\nasync def get_intelligence_list(query: str, index: str) -> List[Intelligence]:\n    intelligence_list: List[Intelligence] = []\n    async with aiohttp.ClientSession() as session:\n        async with session.get(\n            BASE_URL, params={\"query\": query, \"index\": index}\n        ) as response:\n            response.raise_for_status()\n            for data in await response.json():\n                intelligence: Intelligence = Intelligence()\n                intelligence.id = data.get(\"id\")\n                intelligence.index = data.get(\"index\")\n                intelligence.source = data.get(\"source\")\n                intelligence.content = data.get(\"content\")\n                intelligence_list.append(intelligence)\n\n    return intelligence_list\n\n\nclass Tools:\n    def __init__(self):\n        self.citation = False\n\n    async def get_information_about_lieutenant(\n        self,\n        query: str,\n        __event_emitter__: Callable[[dict[str, dict[str, Any] | str]], Awaitable[None]],\n    ) -> str:\n        \"\"\"\n        Retrieves information about Lieutenant.\n        Ensure that the query that is input is in natural language.\n        An example of a valid query is: \"What is the system architecture of Lieutenant?\"\n\n        :param query: The query that will be used to search the vector database for details about Lieutenant\n        :return: The documents, and it's metadata that are most relevant to the query about Lieutenant.\n        \"\"\"\n        index: str = \"Lieutenant\"\n\n        await __event_emitter__(\n            {\n                \"type\": \"status\",\n                \"data\": {\n                    \"description\": f\"Asking the Intelligence Service: {query}\",\n                    \"done\": False,\n                },\n            }\n        )\n\n        intelligence_list: List[Intelligence] = await get_intelligence_list(\n            query, index\n        )\n\n        await __event_emitter__(\n            {\n                \"type\": \"status\",\n                \"data\": {\n                    \"description\": f\"Retrieved {len(intelligence_list)} sources\",\n                    \"done\": True,\n                },\n            }\n        )\n        await __event_emitter__(\n            {\n                \"type\": \"message\",\n                \"data\": {\n                    \"content\": f\"Sources:\\n\"\n                    + \"\\n\".join([f\"- `{i.source}`\" for i in intelligence_list])\n                    + \"\\n\\n---\\n\\n\"\n                },\n            }\n        )\n\n        return \"\\n\".join([str(intelligence) for intelligence in intelligence_list])\n",
+    "specs": [
+      {
+        "name": "get_information_about_lieutenant",
+        "description": "Retrieves information about Lieutenant.\nEnsure that the query that is input is in natural language.\nAn example of a valid query is: \"What is the system architecture of Lieutenant?\"",
+        "parameters": {
+          "properties": {
+            "query": {
+              "description": "The query that will be used to search the vector database for details about Lieutenant",
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "type": "object"
+        }
+      }
+    ],
+    "meta": {
+      "description": "Retrieves information about Lieutenant.",
+      "manifest": {}
+    },
+    "access_control": null,
+    "updated_at": 1741512956,
+    "created_at": 1741511592
+  }
+]

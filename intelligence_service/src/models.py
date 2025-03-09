@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Coroutine, Callable
 
 import aiohttp
 from pydantic import BaseModel
@@ -39,10 +39,21 @@ class BaseIntelligence(BaseModel, ABC):
                 response.raise_for_status()
 
 
+class ScheduledTask(BaseModel):
+    name: str
+    update_func: Callable
+    update_schedule: str
+
+
 class BaseOfficer(BaseModel, ABC):
     @staticmethod
     @abstractmethod
-    async def update() -> None:
+    async def get_scheduled_tasks() -> List[ScheduledTask]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    async def update_on_startup() -> None:
         pass
 
     @staticmethod

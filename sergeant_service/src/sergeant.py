@@ -124,7 +124,7 @@ class Sergeant(BaseModel):
         return ChatOpenAI(
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens  # type: ignore[call-arg]
+            max_tokens=llm_config.max_tokens
         )
 
     @staticmethod
