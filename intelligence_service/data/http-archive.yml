@@ -1,0 +1,6 @@
+- name: "Lieutenant's Codebase"
+  source: "https://codeload.github.com/lieutenant-ecosystem/lieutenant/zip/refs/heads/main"
+  index: "Lieutenant"
+  description: "Lieutenant's Codebase"
+  update_schedule: "0 0 1 * *"                         # https://crontab.guru/
+  update_on_start_up: false

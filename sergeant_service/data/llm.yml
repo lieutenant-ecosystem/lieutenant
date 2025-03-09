@@ -15,5 +15,19 @@
   parent_model_id: "gpt-4o-mini"
   developer_prompt: "You answer questions with respect to the context given."
   indexes:
-    - id: "HTTPBlobIntelligence"
+    - id: "Notes"
       description: "Notes"
+
+- name: "Lieutenant's Code"
+  parent_model_id: "gpt-4o"
+  developer_prompt: "You answer questions with respect to the context given. Keep your answers short unless asked to elaborate."
+  indexes:
+    - id: "Lieutenant"
+      description: "Lieutenant's Codebase"
+
+- name: "Lieutenant's Code (Reasoning)"
+  parent_model_id: "o1-mini"
+  developer_prompt: "You answer questions with respect to the context given. You should only reply with code. Do not reply with any other text unless that comment is of utmost importance."
+  indexes:
+    - id: "Lieutenant"
+      description: "Lieutenant's Codebase"
