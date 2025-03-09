@@ -45,8 +45,6 @@ spec:
               value: "True"
             - name: ENABLE_LOGIN_FORM
               value: "False"
-            - name: TASK_MODEL_EXTERNAL
-              value: "GPT-4o Mini"
             - name: ENABLE_OLLAMA_API
               value: "False"
             - name: DATABASE_URL

@@ -1,0 +1,63 @@
+{
+  "version": 0,
+  "ui": {
+    "default_locale": "",
+    "prompt_suggestions": [],
+    "enable_signup": true,
+    "default_user_role": "user",
+    "enable_community_sharing": true,
+    "enable_message_rating": true,
+    "banners": []
+  },
+  "webhook_url": "",
+  "auth": {
+    "admin": {
+      "show": true
+    },
+    "api_key": {
+      "enable": true,
+      "endpoint_restrictions": false,
+      "allowed_endpoints": ""
+    },
+    "jwt_expiry": "-1"
+  },
+  "webui": {
+    "url": "http://localhost:3000"
+  },
+  "channels": {
+    "enable": false
+  },
+  "task": {
+    "model": {
+      "default": "",
+      "external": "GPT-4o Mini"
+    },
+    "title": {
+      "enable": true,
+      "prompt_template": ""
+    },
+    "image": {
+      "prompt_template": ""
+    },
+    "autocomplete": {
+      "enable": true,
+      "input_max_length": -1
+    },
+    "tags": {
+      "prompt_template": "",
+      "enable": true
+    },
+    "query": {
+      "search": {
+        "enable": true
+      },
+      "retrieval": {
+        "enable": true
+      },
+      "prompt_template": ""
+    },
+    "tools": {
+      "prompt_template": ""
+    }
+  }
+}
