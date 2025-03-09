@@ -12,10 +12,10 @@ BASE_URL: str = "http://0.0.0.0:8002"
 @pytest.mark.asyncio
 async def test_upsert_http_blob() -> None:
     url: str = f"{BASE_URL}/http_blob"
-    data: Dict[str, str] = BaseIntelligence(source="https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/main/sergeant_service/mypy.ini", index="TEST").model_dump()
+    data: Dict[str, str] = BaseIntelligence(source="https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/main/sergeant_service/mypy.ini", index="TEST").model_dump()  # type: ignore[arg-type]
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=data) as response:  # type: ignore[arg-type]
+        async with session.post(url, json=data) as response:
             assert response.status == 200
 
 

@@ -1,10 +1,14 @@
+import logging
+from logging import Logger
 from typing import List, Any, Dict
 
 import aiohttp
 import yaml
 from pydantic import BaseModel
 
-from src.models import BaseOfficer, BaseIntelligence
+from src.models import BaseOfficer, BaseIntelligence, ScheduledTask
+
+logger: Logger = logging.getLogger(__name__)
 
 
 class HTTPBlobConfig(BaseModel):
@@ -12,6 +16,8 @@ class HTTPBlobConfig(BaseModel):
     source: str
     index: str
     description: str
+    update_schedule: str
+    update_on_start_up: bool
 
     @staticmethod
     def get() -> List["HTTPBlobConfig"]:
@@ -26,7 +32,6 @@ class HTTPBlobConfig(BaseModel):
 
 class HTTPBlob(BaseOfficer):
 
-
     @staticmethod
     async def _get_file_content(url: str) -> str:
         async with aiohttp.ClientSession() as session:
@@ -37,10 +42,34 @@ class HTTPBlob(BaseOfficer):
         return data.decode("utf-8")
 
     @staticmethod
-    async def update() -> None:
+    def get_scheduled_tasks() -> List[ScheduledTask]:  # type: ignore[override]
+        scheduled_task_list: List[ScheduledTask] = []
         for http_blob_config in HTTPBlobConfig.get():
             intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
-            await HTTPBlob.upsert(intelligence)
+
+            async def update() -> None:
+                logger.info(f"Updating Index on Schedule: {http_blob_config.name} | {http_blob_config.index}")
+                logger.info(f"Updating Index on Schedule: {http_blob_config.name} | {http_blob_config.index}")
+                await HTTPBlob.upsert(intelligence)
+                logger.info(f"Updating Index on Schedule completed: {http_blob_config.name} | {http_blob_config.index}")
+
+            scheduled_task_list.append(ScheduledTask(
+                name=f"{http_blob_config.name} Updater",
+                update_func=update,
+                update_schedule=http_blob_config.update_schedule
+            ))
+
+        return scheduled_task_list
+
+    @staticmethod
+    async def update_on_startup() -> None:
+
+        for http_blob_config in HTTPBlobConfig.get():
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            if http_blob_config.update_on_start_up:
+                logger.info(f"Updating Index on Startup: {http_blob_config.name} | {http_blob_config.index}")
+                await HTTPBlob.upsert(intelligence)
+                logger.info(f"Updating Index on Startup completed: {http_blob_config.name} | {http_blob_config.index}")
 
     @staticmethod
     async def upsert(intelligence: BaseIntelligence) -> None:

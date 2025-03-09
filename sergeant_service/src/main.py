@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from typing import List, Dict
@@ -21,6 +22,8 @@ if os.getenv("SENTRY_DSN"):
         _experiments={"continuous_profiling_auto_start": True, },
     )
 app = FastAPI(title="Lieutenant API")
+logging.basicConfig(level=logging.DEBUG if common.is_test_environment() else logging.INFO,
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 class AuthenticateToken(HTTPBearer):
@@ -66,4 +69,4 @@ async def models() -> Dict[str, List[Dict[str, str | int]] | str]:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug" if common.is_test_environment() else "info")

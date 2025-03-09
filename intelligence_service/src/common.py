@@ -1,12 +1,16 @@
 import asyncio
 import hashlib
+import logging
 import os
 import time
 from enum import Enum
+from logging import Logger
 
 import aiohttp
 from aiohttp import ClientError
 from starlette.requests import Request
+
+logger: Logger = logging.getLogger(__name__)
 
 
 class Constants(Enum):
@@ -46,14 +50,14 @@ async def wait_for_connection(host: str, port: int, timeout: int = 60) -> None:
     start_time: float = time.time()
     while True:
         try:
-            print(f"Attempting to connect to {host}:{port}...")
+            logger.debug(f"Attempting to connect to {host}:{port}...")
             reader, writer = await asyncio.open_connection(host, port)
-            print(f"Successfully connected to {host}:{port}")
+            logger.debug(f"Successfully connected to {host}:{port}")
             writer.close()
             await writer.wait_closed()
             return
         except (ConnectionRefusedError, OSError) as e:
-            print(f"Error while connecting to{host}:{port}: {str(e)}")
+            logger.error(f"Error while connecting to{host}:{port}: {str(e)}")
 
         elapsed: float = time.time() - start_time
         if elapsed >= timeout:
