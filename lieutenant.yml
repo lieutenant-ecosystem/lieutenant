@@ -17,11 +17,11 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/lieutenant-ecosystem/open_webui:dev
+          image: ghcr.io/lieutenant-ecosystem/open_webui:beta
           imagePullPolicy: Always
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -65,13 +65,13 @@ spec:
             - containerPort: 8080
 
         - name: sergeant-service
-          image: ghcr.io/lieutenant-ecosystem/sergeant_service:dev
+          image: ghcr.io/lieutenant-ecosystem/sergeant_service:beta
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -99,13 +99,13 @@ spec:
                   key: SENTRY_DSN
 
         - name: vector-embedding-service
-          image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:dev
+          image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:beta
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -157,7 +157,7 @@ spec:
             - containerPort: 8002
           env:
             - name: ENVIRONMENT
-              value: "DEV"
+              value: "BETA"
 
 ---
 
