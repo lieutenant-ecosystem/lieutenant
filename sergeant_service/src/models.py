@@ -1,6 +1,6 @@
 import time
 import uuid
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 class Message(BaseModel):
     role: str
-    content: str
+    content: Union[str, List[Dict[str, Any]]]
 
 
 class ChatCompletionRequest(BaseModel):
