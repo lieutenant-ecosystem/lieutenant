@@ -23,6 +23,8 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
+            - name: WEBUI_NAME
+              value: "Lieutenant"
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: RAG_OPENAI_API_BASE_URL
