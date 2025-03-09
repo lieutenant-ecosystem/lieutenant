@@ -18,6 +18,9 @@ class HTTPBlobConfig(BaseModel):
         with open("data/http-blob.yml", "r") as raw_string:
             raw_data_list: List[Dict[str, Any]] = yaml.safe_load(raw_string)
 
+        if raw_data_list is None:
+            return []
+
         return [HTTPBlobConfig(**raw_data) for raw_data in raw_data_list]
 
 

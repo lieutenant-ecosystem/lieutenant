@@ -38,7 +38,7 @@ docker push localhost:32000/gateway:local
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
-  microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume   # Deletes the existing database data
+#  microk8s kubectl delete pvc postgres-volume-claim && microk8s kubectl delete pv postgres-volume   # Deletes the existing database data
   microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | microk8s kubectl apply -f -

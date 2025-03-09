@@ -10,7 +10,7 @@ from starlette.requests import Request
 
 from src import common
 from src.common import Constants
-from src.models import BaseIntelligenceQuery
+from src.models import BaseOfficer
 from src.officer.http_archive import HTTPArchive
 from src.officer.http_blob import BaseIntelligence, HTTPBlob
 
@@ -46,24 +46,19 @@ class AuthenticateToken(HTTPBearer):
             raise HTTPException(status_code=401, detail="Invalid token.")
 
 
+@app.get("/", dependencies=[Depends(AuthenticateToken())])
+async def get(query: str, index: str) -> List[BaseIntelligence]:
+    return await BaseOfficer.get(query, index)
+
+
 @app.post("/http_blob", dependencies=[Depends(AuthenticateToken())])
 async def upsert_http_blob(intelligence: BaseIntelligence) -> None:
     await HTTPBlob.upsert(intelligence)
 
 
-@app.get("/http_blob", dependencies=[Depends(AuthenticateToken())])
-async def get_http_blob(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
-    return await HTTPBlob.get(intelligence_query.query, intelligence_query.index)
-
-
 @app.post("/http_archive", dependencies=[Depends(AuthenticateToken())])
 async def upsert_http_archive(intelligence: BaseIntelligence) -> None:
     await HTTPArchive.upsert(intelligence)
-
-
-@app.get("/http_archive", dependencies=[Depends(AuthenticateToken())])
-async def get_http_archive(intelligence_query: BaseIntelligenceQuery) -> List[BaseIntelligence]:
-    return await HTTPArchive.get(intelligence_query.query, intelligence_query.index)
 
 
 if __name__ == "__main__":

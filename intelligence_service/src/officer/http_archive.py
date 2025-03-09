@@ -21,6 +21,9 @@ class HTTPArchiveConfig(BaseModel):
         with open("data/http-archive.yml", "r") as raw_string:
             raw_data_list: List[Dict[str, Any]] = yaml.safe_load(raw_string)
 
+        if raw_data_list is None:
+            return []
+
         return [HTTPArchiveConfig(**raw_data) for raw_data in raw_data_list]
 
 
