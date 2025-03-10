@@ -1,22 +1,18 @@
 # https://github.com/marketplace?type=models
 - name: "GPT-4o"
   parent_model_id: "gpt-4o"
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
-- name: "Microsoft Phi-4"
-  parent_model_id: "Phi-4-multimodal-instruct"
+- name: "GPT-4o Mini"
+  parent_model_id: "gpt-4o-mini"
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
-- name: "Llama 3.1 405B Instruct"
-  parent_model_id: "Meta-Llama-3.1-405B-Instruct"
-
-- name: "Llama 3.3 (70B)"
-  parent_model_id: "Llama-3.3-70B-Instruct"
-
-- name: "Codestral"
-  parent_model_id: "Codestral-2501"
-
-- name: "Mistral Large"
-  parent_model_id: "Mistral-large"
-
+- name: "o1 Mini"
+  parent_model_id: "o1-mini"
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
 # Vector Embedding Model attached models
 - name: "Notes"

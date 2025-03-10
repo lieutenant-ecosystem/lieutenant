@@ -10,7 +10,7 @@ BASE_URL: str = "http://0.0.0.0:8000"
 async def test_chat_completion() -> None:
     mock_message_list: List[Message] = [Message(role="user", content="What is the capital of France? Answer in one word only.")]
     mock_chat_completion_request: ChatCompletionRequest = ChatCompletionRequest(
-        model="GPT-4o Mini",
+        model="GPT-4o (OpenAI)",
         messages=mock_message_list,
         max_tokens=100,
         temperature=0.7,
