@@ -49,6 +49,7 @@ class LLMConfig(BaseModel):
     max_tokens: Optional[int] = None
     developer_prompt: str = "You are a helpful assistant."
     index_list: List[LLMIndexConfig] = []
+    api_key_environment_variable_key: Optional[str] = None
 
     @staticmethod
     def get_all() -> List["LLMConfig"]:
@@ -62,6 +63,7 @@ class LLMConfig(BaseModel):
             endpoint: str = raw_data.get("endpoint") or "https://api.openai.com/v1/"
             temperature: int = raw_data.get("temperature")
             max_tokens: int = raw_data.get("max_tokens")
+            api_key_environment_variable_key: str = raw_data.get("api_key_environment_variable_key")
             developer_prompt: str = raw_data.get("developer_prompt") or "You are a helpful assistant."
             index_list: List[LLMIndexConfig] = [LLMIndexConfig(**index_config) for index_config in raw_data.get("indexes")] if raw_data.get("indexes") is not None else []
 
@@ -72,7 +74,8 @@ class LLMConfig(BaseModel):
                 temperature=temperature,
                 max_tokens=max_tokens,
                 developer_prompt=developer_prompt,
-                index_list=index_list
+                index_list=index_list,
+                api_key_environment_variable_key=api_key_environment_variable_key
             ))
 
         return llm_config_list
@@ -124,7 +127,9 @@ class Sergeant(BaseModel):
         return ChatOpenAI(
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens
+            max_tokens=llm_config.max_tokens,
+            base_url=llm_config.endpoint or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL"),
+            api_key=os.getenv(llm_config.api_key_environment_variable_key) if llm_config.api_key_environment_variable_key else os.getenv("OPENAI_COMPATIBLE_API_KEY")
         )
 
     @staticmethod
@@ -154,7 +159,7 @@ class Sergeant(BaseModel):
         for message in request.messages:  # type: ignore[attr-defined]
             is_developer_prompt = message.role == "system" or message.role == "developer"
             if is_developer_prompt:
-                role: str = "developer"
+                role: str = "user" if "o1" in str(request.model).lower() or "reason" in str(request.model).lower() else "system"  # TODO: This is a known bug with o1-mini
                 content: str = f"{sergeant.developer_prompt}\n---\n{message.content}"
             else:
                 role = message.role

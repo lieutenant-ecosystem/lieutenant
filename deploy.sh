@@ -20,11 +20,13 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=DATABASE_URL="${DATABASE_URL}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
-  --from-literal=GOOGLE_PSE_API_KEY="${GOOGLE_PSE_API_KEY}" \
-  --from-literal=GOOGLE_PSE_ENGINE_ID="${GOOGLE_PSE_ENGINE_ID}" \
+  --from-literal=OPENAI_COMPATIBLE_API_BASE_URL="${OPENAI_COMPATIBLE_API_BASE_URL}" \
+  --from-literal=OPENAI_COMPATIBLE_API_KEY="${OPENAI_COMPATIBLE_API_KEY}" \
   --from-literal=MICROSOFT_CLIENT_ID="${MICROSOFT_CLIENT_ID}" \
   --from-literal=MICROSOFT_CLIENT_SECRET="${MICROSOFT_CLIENT_SECRET}" \
   --from-literal=MICROSOFT_CLIENT_TENANT_ID="${MICROSOFT_CLIENT_TENANT_ID}" \
+  --from-literal=VECTOR_EMBEDDING_BASE_URL="${VECTOR_EMBEDDING_BASE_URL}" \
+  --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
   --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}" \
   --dry-run=client -o yaml | microk8s kubectl apply -f -
 microk8s kubectl apply -f lieutenant.yml
@@ -43,5 +45,5 @@ microk8s kubectl describe pod -l app=lieutenant
 echo "---"
 echo "Waiting for Lieutenant's containers to be initialized"
 echo "---"
-microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
+microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=600s
 microk8s kubectl logs -f -l app=lieutenant --all-containers=true

@@ -15,10 +15,10 @@ logger: Logger = logging.getLogger(__name__)
 
 class Constants(Enum):
     OPEN_WEBUI_PORT = "80"
-    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"
+    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"  # TODO: Change to an environmental variable
     VECTOR_EMBEDDING_SERVICE_HOST = "lieutenant-service"
     VECTOR_EMBEDDING_SERVICE_PORT = "82"  # 82/8001
-    VECTOR_EMBEDDING_SERVICE_URL = f"http://{VECTOR_EMBEDDING_SERVICE_HOST}:{VECTOR_EMBEDDING_SERVICE_PORT}"
+    VECTOR_EMBEDDING_SERVICE_URL = f"http://{VECTOR_EMBEDDING_SERVICE_HOST}:{VECTOR_EMBEDDING_SERVICE_PORT}"  # TODO: Change to an environmental variable
 
 
 def is_production_environment() -> bool:

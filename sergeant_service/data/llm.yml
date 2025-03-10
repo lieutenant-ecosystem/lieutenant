@@ -1,18 +1,22 @@
-# Remember to add the LLM's name in src.sergeant.LLM enum
+# https://github.com/marketplace?type=models
+- name: "GPT-4o"
+  parent_model_id: "gpt-4o"
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
 - name: "GPT-4o Mini"
   parent_model_id: "gpt-4o-mini"
-
-- name: "GPT-4o"
-  parent_model_id: "chatgpt-4o-latest"
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
 - name: "o1 Mini"
   parent_model_id: "o1-mini"
-
+  endpoint: "https://api.openai.com/v1"
+  api_key_environment_variable_key: "OPENAI_API_KEY"
 
 # Vector Embedding Model attached models
 - name: "Notes"
-  parent_model_id: "gpt-4o-mini"
+  parent_model_id: "gpt-4o"
   developer_prompt: "You answer questions with respect to the context given."
   indexes:
     - id: "Notes"
@@ -21,13 +25,6 @@
 - name: "Lieutenant's Code"
   parent_model_id: "gpt-4o"
   developer_prompt: "You answer questions with respect to the context given. Keep your answers short unless asked to elaborate."
-  indexes:
-    - id: "Lieutenant"
-      description: "Lieutenant's Codebase"
-
-- name: "Lieutenant's Code (Reasoning)"
-  parent_model_id: "o1-mini"
-  developer_prompt: "You answer questions with respect to the context given. You should only reply with code. Do not reply with any other text unless that comment is of utmost importance."
   indexes:
     - id: "Lieutenant"
       description: "Lieutenant's Codebase"
