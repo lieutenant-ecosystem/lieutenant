@@ -1,6 +1,10 @@
-# How to setup the development environment
+# What is Lieutenant?
 
-1. Run the `docker compose`/`podman-compose` with the `compose-dev.yml` file and
-   the [necessary environment variables](https://lieutenant-ecosystem.github.io/docs/Infrastructure/home)
-2. Change your SSH config for SSH access (useful for connecting to the
-   database) ([guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-cloudflared-authentication/#2-connect-as-a-user))
+Lieutenant, inspired by Microsoft's "Copilot," is an ecosystem that seamlessly connects your systems with large language models, empowering everyone with artificial intelligence.
+
+The technical documentation is [here](https://lieutenant-ecosystem.github.io/).
+
+# How to run the development environment
+
+1. Set all the environmental variables into a file called `.env_local`.
+2. Execute the `dev/deploy.sh` script
