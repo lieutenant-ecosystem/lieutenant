@@ -37,7 +37,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/var/snap/microk8s/common/vector_embedding_service_service"
+    path: "/var/snap/microk8s/common/vector_embedding_service"
 
 ---
 

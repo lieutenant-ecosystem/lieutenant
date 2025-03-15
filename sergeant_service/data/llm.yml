@@ -14,10 +14,15 @@
   endpoint: "https://api.openai.com/v1"
   api_key_environment_variable_key: "OPENAI_API_KEY"
 
-- name: "Llama 3.1 8B"
-  parent_model_id: "@cf/meta/llama-3.1-8b-instruct"
-  endpoint: "https://api.cloudflare.com/client/v4/{cloudflare_account_id}/f978e281fed80cde859292ca4417e355/ai/v1"
-  api_key: "{cloudflare_api_key}"
+#- name: "Llama 3.3 70B"
+#  parent_model_id: "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+#  endpoint: "https://api.cloudflare.com/client/v4/accounts/{cloudflare_account_id}/ai/v1/"
+#  api_key: "{cloudflare_api_key}"
+#
+#- name: "Llama 3.2 11B Vision"
+#  parent_model_id: "@cf/meta/llama-3.2-11b-vision-instruct"
+#  endpoint: "https://api.cloudflare.com/client/v4/accounts/{cloudflare_account_id}/ai/v1/"
+#  api_key: "{cloudflare_api_key}"
 
 # Vector Embedding Model attached models
 - name: "Notes"
