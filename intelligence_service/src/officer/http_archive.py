@@ -68,10 +68,10 @@ class HTTPArchive(BaseOfficer):
         return extracted_files
 
     @staticmethod
-    def get_scheduled_tasks() -> List[ScheduledTask]:  # type: ignore[override]
+    def get_scheduled_tasks() -> List[ScheduledTask]:
         scheduled_task_list: List[ScheduledTask] = []
         for http_blob_config in HTTPArchiveConfig.get():
-            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)
 
             async def update() -> None:
                 logger.info(f"Updating Index on Schedule: {http_blob_config.name} | {http_blob_config.index}")
@@ -90,7 +90,7 @@ class HTTPArchive(BaseOfficer):
     async def update_on_startup() -> None:
 
         for http_blob_config in HTTPArchiveConfig.get():
-            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)
             if http_blob_config.update_on_start_up:
                 logger.info(f"Updating Index on Startup: {http_blob_config.name} | {http_blob_config.index}")
                 await HTTPArchive.upsert(intelligence)
