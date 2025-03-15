@@ -44,7 +44,7 @@ class LLMIndexConfig(BaseModel):
 class LLMConfig(BaseModel):
     name: str
     parent_model_id: str
-    endpoint: Optional[str] = "https://api.openai.com/v1/"
+    endpoint: Optional[str]
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
     developer_prompt: str = "You are a helpful assistant."
@@ -60,7 +60,7 @@ class LLMConfig(BaseModel):
         for raw_data in raw_data_list:
             name: str = raw_data.get("name")
             parent_model_id: str = raw_data.get("parent_model_id")
-            endpoint: str = raw_data.get("endpoint") or "https://api.openai.com/v1/"
+            endpoint: str = raw_data.get("endpoint") or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1/"
             temperature: int = raw_data.get("temperature")
             max_tokens: int = raw_data.get("max_tokens")
             developer_prompt: str = raw_data.get("developer_prompt") or "You are a helpful assistant."
