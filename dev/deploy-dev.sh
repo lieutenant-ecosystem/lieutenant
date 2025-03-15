@@ -87,5 +87,5 @@ sudo microk8s kubectl apply -f dev/gateway.yml
 
 # Tail the logs
 sudo microk8s kubectl describe pod -l app=lieutenant
-sudo microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=60s
+sudo microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=600s
 sudo microk8s kubectl logs -f -l app=lieutenant --all-containers=true
