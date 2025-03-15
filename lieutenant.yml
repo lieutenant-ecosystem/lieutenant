@@ -194,6 +194,12 @@ spec:
                 secretKeyRef:
                   name: lieutenant-secrets
                   key: VECTOR_EMBEDDING_SERVICE_DATABASE_URL
+            - name: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
+                  optional: true
             - name: SENTRY_DSN
               valueFrom:
                 secretKeyRef:
