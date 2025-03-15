@@ -16,9 +16,19 @@ if ! groups | grep -q "\bsudo microk8s\b"; then
 fi
 
 # Prepare the symlinks for data persistence
-sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/sergeant_service/data/" "/var/snap/microk8s/common/sergeant_service"
-sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/vector_embedding_service/data/" "/var/snap/microk8s/common/vector_embedding_service"
-sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/intelligence_service/data/" "/var/snap/microk8s/common/intelligence_service"
+APP_DATA_DIR="$HOME/app_data"
+SERGEANT_SERVICE_DATA_DIR="$APP_DATA_DIR/sergeant_service/data/"
+VECTOR_EMBEDDING_SERVICE_DATA_DIR="$APP_DATA_DIR/vector_embedding_service/data/"
+INTELLIGENCE_SERVICE_DATA_DIR="$APP_DATA_DIR/intelligence_service/data/"
+
+mkdir -p "$SERGEANT_SERVICE_DATA_DIR"
+mkdir -p "$VECTOR_EMBEDDING_SERVICE_DATA_DIR"
+mkdir -p "$INTELLIGENCE_SERVICE_DATA_DIR"
+
+sudo ln -sfn "$SERGEANT_SERVICE_DATA_DIR" "/var/snap/microk8s/common/sergeant_service"
+sudo ln -sfn "$VECTOR_EMBEDDING_SERVICE_DATA_DIR" "/var/snap/microk8s/common/vector_embedding_service"
+sudo ln -sfn "$INTELLIGENCE_SERVICE_DATA_DIR" "/var/snap/microk8s/common/intelligence_service"
+
 
 # Lieutenant
 sudo microk8s kubectl create secret generic lieutenant-secrets \
