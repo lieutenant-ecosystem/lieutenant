@@ -71,7 +71,7 @@ class LLMConfig(BaseModel):
             elif raw_data.get("api_key_environment_variable_key") is not None:
                 api_key = os.getenv(raw_data.get("api_key_environment_variable_key"))
             else:
-                api_key = os.getenv("OPENAI_COMPATIBLE_API_KEY")
+                api_key = os.getenv("OPENAI_COMPATIBLE_API_KEY") or os.getenv("OPENAI_API_KEY")
 
             llm_config_list.append(LLMConfig(
                 name=name,
@@ -134,7 +134,7 @@ class Sergeant(BaseModel):
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
             max_tokens=llm_config.max_tokens,  # type: ignore[call-arg]
-            base_url=llm_config.endpoint or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL"),
+            base_url=llm_config.endpoint or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1",
             api_key=llm_config.api_key  # type: ignore[arg-type]
         )
 
