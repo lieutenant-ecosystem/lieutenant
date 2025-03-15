@@ -118,32 +118,15 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
-            - name: WEBUI_NAME
-              value: "Lieutenant"
             - name: OPENAI_API_BASE_URL
               value: "http://localhost:8000"
             - name: RAG_OPENAI_API_BASE_URL
               value: "http://localhost:8001"
-            - name: AUDIO_STT_ENGINE
-              value: "openai"
-            - name: AUDIO_TTS_ENGINE
-              value: "openai"
-            - name: AUDIO_STT_MODEL
-              value: "whisper-1"
-            - name: RAG_EMBEDDING_ENGINE
-              value: "openai"
-            - name: ENABLE_EVALUATION_ARENA_MODELS
-              value: "False"
             - name: RAG_EMBEDDING_MODEL
-              value: "text-embedding-3-small"
-            - name: ENABLE_RAG_WEB_SEARCH
-              value: "False"
-            - name: ENABLE_OAUTH_SIGNUP
-              value: "True"
-            - name: ENABLE_LOGIN_FORM
-              value: "False"
-            - name: ENABLE_OLLAMA_API
-              value: "False"
+              valueFrom:
+                secretKeyRef:
+                  name: lieutenant-secrets
+                  key: VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
