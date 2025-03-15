@@ -34,11 +34,25 @@ docker build -t localhost:32000/gateway:local gateway
 docker push localhost:32000/open_webui:local
 docker push localhost:32000/gateway:local
 
+# Prepare the symlinks for data persistence
+APP_DATA_DIR="$HOME/app_data"
+SERGEANT_SERVICE_DATA_DIR="$APP_DATA_DIR/sergeant_service/data/"
+VECTOR_EMBEDDING_SERVICE_DATA_DIR="$APP_DATA_DIR/vector_embedding_service/data/"
+INTELLIGENCE_SERVICE_DATA_DIR="$APP_DATA_DIR/intelligence_service/data/"
+
+mkdir -p "$SERGEANT_SERVICE_DATA_DIR"
+mkdir -p "$VECTOR_EMBEDDING_SERVICE_DATA_DIR"
+mkdir -p "$INTELLIGENCE_SERVICE_DATA_DIR"
+
+sudo ln -sfn "$SERGEANT_SERVICE_DATA_DIR" "/var/snap/microk8s/common/sergeant_service"
+sudo ln -sfn "$VECTOR_EMBEDDING_SERVICE_DATA_DIR" "/var/snap/microk8s/common/vector_embedding_service"
+sudo ln -sfn "$INTELLIGENCE_SERVICE_DATA_DIR" "/var/snap/microk8s/common/intelligence_service"
+
+
 # Deploy
 
 ## Postgres SQL database
 if [ "$ENVIRONMENT" = "dev" ]; then
-#  sudo microk8s kubectl delete pvc postgres-volume-claim && sudo microk8s kubectl delete pv postgres-volume   # Deletes the existing database data
   sudo microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | sudo microk8s kubectl apply -f -

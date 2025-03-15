@@ -15,6 +15,11 @@ if ! groups | grep -q "\bsudo microk8s\b"; then
   newgrp sudo microk8s
 fi
 
+# Prepare the symlinks for data persistence
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/sergeant_service/data/" "/var/snap/microk8s/common/sergeant_service"
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/vector_embedding_service/data/" "/var/snap/microk8s/common/vector_embedding_service"
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/intelligence_service/data/" "/var/snap/microk8s/common/intelligence_service"
+
 # Lieutenant
 sudo microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
