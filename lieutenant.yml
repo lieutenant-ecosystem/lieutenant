@@ -1,3 +1,88 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sergeant-service-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Ki
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/snap/microk8s/common/sergeant_service"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sergeant-service-claim
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Ki
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vector-embedding-service-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Ki
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/snap/microk8s/common/vector_embedding_service_service"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vector-embedding-service-claim
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Ki
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: intelligence-service-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Ki
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/snap/microk8s/common/intelligence_service"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intelligence-service-claim
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Ki
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +100,16 @@ spec:
         app: lieutenant
         role: lieutenant
     spec:
+      volumes:
+        - name: sergeant-service-storage
+          persistentVolumeClaim:
+            claimName: sergeant-service-claim
+        - name: vector-embedding-service-storage
+          persistentVolumeClaim:
+            claimName: vector-embedding-service-claim
+        - name: intelligence-service-storage
+          persistentVolumeClaim:
+            claimName: intelligence-service-claim
       containers:
         - name: open-webui
           image: ghcr.io/lieutenant-ecosystem/open_webui:beta
@@ -67,11 +162,18 @@ spec:
         - name: sergeant-service
           image: ghcr.io/lieutenant-ecosystem/sergeant_service:beta
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /app/data
+              name: sergeant-service-storage
           ports:
             - containerPort: 8000
           env:
             - name: ENVIRONMENT
               value: "BETA"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
+            - name: VECTOR_EMBEDDING_SERVICE_URL
+              value: "http://lieutenant-service:82"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -101,11 +203,16 @@ spec:
         - name: vector-embedding-service
           image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:beta
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /app/data
+              name: vector-embedding-service-storage
           ports:
             - containerPort: 8001
           env:
             - name: ENVIRONMENT
               value: "BETA"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -153,11 +260,18 @@ spec:
         - name: intelligence-service
           image: ghcr.io/lieutenant-ecosystem/intelligence_service:beta
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /app/data
+              name: intelligence-service-storage
           ports:
             - containerPort: 8002
           env:
             - name: ENVIRONMENT
               value: "BETA"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
+            - name: VECTOR_EMBEDDING_SERVICE_URL
+              value: "http://lieutenant-service:82"
 
 ---
 

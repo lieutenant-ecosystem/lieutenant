@@ -16,8 +16,8 @@ from langchain_postgres import PGVector
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from src.common import Constants
-from src.models import ChatCompletionRequest, ChatCompletionResponse
+from common import Constants
+from models import ChatCompletionRequest, ChatCompletionResponse
 
 DEFAULT_EMBEDDING_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 

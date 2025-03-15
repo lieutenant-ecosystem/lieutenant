@@ -1,4 +1,3 @@
-import asyncio
 import os
 from typing import Optional, List, Any, Dict
 
@@ -9,7 +8,7 @@ from langchain_postgres import PGVector
 from pydantic import BaseModel, Field
 from sqlalchemy import make_url, create_engine, Engine, URL, text
 
-from src import common
+import common
 
 DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 

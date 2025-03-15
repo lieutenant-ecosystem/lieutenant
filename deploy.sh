@@ -7,16 +7,21 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/gateway.yml
 
 # Install microk8s
-if ! microk8s version &>/dev/null; then
-    sudo snap install microk8s --classic
+if ! sudo microk8s version &>/dev/null; then
+    sudo snap install sudo microk8s --classic
 fi
-sudo usermod -a -G microk8s $USER
-if ! groups | grep -q "\bmicrok8s\b"; then
-  newgrp microk8s
+sudo usermod -a -G sudo microk8s $USER
+if ! groups | grep -q "\bsudo microk8s\b"; then
+  newgrp sudo microk8s
 fi
 
+# Prepare the symlinks for data persistence
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/sergeant_service/data/" "/var/snap/microk8s/common/sergeant_service"
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/vector_embedding_service/data/" "/var/snap/microk8s/common/vector_embedding_service"
+sudo ln -sfn "$HOME/Documents/Codebase/lieutenant/intelligence_service/data/" "/var/snap/microk8s/common/intelligence_service"
+
 # Lieutenant
-microk8s kubectl create secret generic lieutenant-secrets \
+sudo microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
   --from-literal=DATABASE_URL="${DATABASE_URL}" \
   --from-literal=SENTRY_DSN="${SENTRY_DSN}" \
@@ -28,22 +33,22 @@ microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=VECTOR_EMBEDDING_BASE_URL="${VECTOR_EMBEDDING_BASE_URL}" \
   --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
   --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}" \
-  --dry-run=client -o yaml | microk8s kubectl apply -f -
-microk8s kubectl apply -f lieutenant.yml
+  --dry-run=client -o yaml | sudo microk8s kubectl apply -f -
+sudo microk8s kubectl apply -f lieutenant.yml
 
 # Gateway
-microk8s kubectl create secret generic gateway-secrets \
+sudo microk8s kubectl create secret generic gateway-secrets \
   --from-literal=CLOUDFLARE_TUNNEL_TOKEN="${CLOUDFLARE_TUNNEL_TOKEN}" \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" \
-  --dry-run=client -o yaml | microk8s kubectl apply -f -
-microk8s kubectl apply -f gateway.yml
+  --dry-run=client -o yaml | sudo microk8s kubectl apply -f -
+sudo microk8s kubectl apply -f gateway.yml
 
 
 # Monitor the deployment
-microk8s kubectl describe pod -l app=lieutenant
+sudo microk8s kubectl describe pod -l app=lieutenant
 echo "---"
 echo "Waiting for Lieutenant's containers to be initialized"
 echo "---"
-microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=600s
-microk8s kubectl logs -f -l app=lieutenant --all-containers=true
+sudo microk8s kubectl wait --for=condition=Ready pod -l app=lieutenant --timeout=600s
+sudo microk8s kubectl logs -f -l app=lieutenant --all-containers=true

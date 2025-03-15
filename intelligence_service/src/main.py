@@ -13,11 +13,11 @@ from fastapi.security import HTTPBearer
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
-from src import common
-from src.common import Constants
-from src.models import BaseOfficer
-from src.officer.http_archive import HTTPArchive
-from src.officer.http_blob import BaseIntelligence, HTTPBlob
+import common
+from common import Constants
+from models import BaseOfficer
+from officer.http_archive import HTTPArchive
+from officer.http_blob import BaseIntelligence, HTTPBlob
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(
@@ -34,7 +34,7 @@ logger: Logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def update_intelligence(app: FastAPI) -> AsyncGenerator:
-    await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_HOST.value, int(Constants.VECTOR_EMBEDDING_SERVICE_PORT.value))
+    await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_URL.value)
 
     for scheduled_task in HTTPBlob.get_scheduled_tasks() + HTTPArchive.get_scheduled_tasks():
         scheduler.add_job(
