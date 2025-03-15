@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Install microk8s
+# Install docker & microk8s
+if ! docker version &>/dev/null; then
+    sudo snap install docker
+fi
 if ! microk8s version &>/dev/null; then
     sudo snap install microk8s --classic
 fi
