@@ -21,16 +21,16 @@ docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" |
 sudo microk8s enable registry
 
 # Build the images
-#docker build -t localhost:32000/sergeant_service:local sergeant_service
-#docker build -t localhost:32000/vector_embedding_service:local vector_embedding_service
-#docker build -t localhost:32000/intelligence_service:local intelligence_service
+docker build -t localhost:32000/sergeant_service:local sergeant_service
+docker build -t localhost:32000/vector_embedding_service:local vector_embedding_service
+docker build -t localhost:32000/intelligence_service:local intelligence_service
 docker build -t localhost:32000/open_webui:local open_webui
 docker build -t localhost:32000/gateway:local gateway
 
 # Push the images to the registry
-#docker push localhost:32000/sergeant_service:local
-#docker push localhost:32000/vector_embedding_service:local
-#docker push localhost:32000/intelligence_service:local
+docker push localhost:32000/sergeant_service:local
+docker push localhost:32000/vector_embedding_service:local
+docker push localhost:32000/intelligence_service:local
 docker push localhost:32000/open_webui:local
 docker push localhost:32000/gateway:local
 
