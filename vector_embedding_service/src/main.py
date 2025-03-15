@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from typing import Dict, Any, List
 
 import sentry_sdk
@@ -9,8 +8,8 @@ from fastapi.security import HTTPBearer
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
-from src import common
-from src.models import EmbeddingQuery, Embedding
+import common
+from models import EmbeddingQuery, Embedding
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(

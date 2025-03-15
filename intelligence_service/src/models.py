@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Dict, List, Coroutine, Callable
+from typing import Optional, Any, Dict, List, Callable
 
 import aiohttp
 from pydantic import BaseModel
 
-from src import common
-from src.common import Constants
+import common
+from common import Constants
 
 
 class BaseIntelligenceQuery(BaseModel):

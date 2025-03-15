@@ -72,6 +72,10 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
+            - name: VECTOR_EMBEDDING_SERVICE_URL
+              value: "http://lieutenant-service:82"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -106,6 +110,8 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -158,6 +164,10 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "DEV"
+            - name: OPEN_WEBUI_URL
+              value: "http://lieutenant-service:80"
+            - name: VECTOR_EMBEDDING_SERVICE_URL
+              value: "http://lieutenant-service:82"
 
 ---
 

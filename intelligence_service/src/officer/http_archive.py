@@ -7,9 +7,9 @@ from typing import List, Dict, Any, Tuple
 
 import aiohttp
 import yaml
+from common import Constants
+from models import BaseOfficer, BaseIntelligence, ScheduledTask
 from pydantic import BaseModel
-
-from src.models import BaseOfficer, BaseIntelligence, ScheduledTask
 
 logger: Logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class HTTPArchiveConfig(BaseModel):
 
     @staticmethod
     def get() -> List["HTTPArchiveConfig"]:
-        with open("data/http-archive.yml", "r") as raw_string:
+        with open(f"{Constants.DATA_PATH.value}http-archive.yml", "r") as raw_string:
             raw_data_list: List[Dict[str, Any]] = yaml.safe_load(raw_string)
 
         if raw_data_list is None:

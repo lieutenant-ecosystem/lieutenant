@@ -8,4 +8,5 @@ WORKDIR /app
 RUN pip install -r requirements.txt --upgrade
 RUN if [ "$ENVIRONMENT" != "Production" ]; then pip install -r requirements-dev.txt --upgrade; fi
 
-ENTRYPOINT ["python", "src/main.py"]
+WORKDIR /app/src
+ENTRYPOINT ["python", "main.py"]

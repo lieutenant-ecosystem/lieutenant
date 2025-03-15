@@ -5,6 +5,7 @@ import os
 import time
 from enum import Enum
 from logging import Logger
+from urllib.parse import urlparse, ParseResult
 
 import aiohttp
 from aiohttp import ClientError
@@ -14,11 +15,9 @@ logger: Logger = logging.getLogger(__name__)
 
 
 class Constants(Enum):
-    OPEN_WEBUI_PORT = "80"
-    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"  # TODO: Change to an environmental variable
-    VECTOR_EMBEDDING_SERVICE_HOST = "lieutenant-service"
-    VECTOR_EMBEDDING_SERVICE_PORT = "82"  # 82/8001
-    VECTOR_EMBEDDING_SERVICE_URL = f"http://{VECTOR_EMBEDDING_SERVICE_HOST}:{VECTOR_EMBEDDING_SERVICE_PORT}"  # TODO: Change to an environmental variable
+    DATA_PATH = "../data/"
+    OPEN_WEBUI_URL = os.getenv("OPEN_WEBUI_URL")
+    VECTOR_EMBEDDING_SERVICE_URL = os.getenv("VECTOR_EMBEDDING_SERVICE_URL")
 
 
 def is_production_environment() -> bool:
@@ -46,7 +45,11 @@ async def is_valid_jwt_token(jwt_token: str) -> bool:
             return False
 
 
-async def wait_for_connection(host: str, port: int, timeout: int = 60) -> None:
+async def wait_for_connection(url: str, timeout: int = 60) -> None:
+    parse_result: ParseResult = urlparse(url)
+    host: str = parse_result.hostname
+    port: int = parse_result.port
+
     start_time: float = time.time()
     while True:
         try:
