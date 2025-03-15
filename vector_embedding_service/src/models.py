@@ -77,12 +77,12 @@ class Embedding(BaseModel):
     @staticmethod
     async def get_raw_embedding(content: str, model: Optional[str] = None) -> Dict[str, Any]:
         model = DEFAULT_MODEL if model is None else model
-        url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or "https://api.openai.com/v1/embeddings"
-        api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_API_KEY")
+        url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1"
+        api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_COMPATIBLE_API_KEY") or os.getenv("OPENAI_API_KEY")
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                url,
+                f"{url}/embeddings",
                 json={"input": content, "model": model},
                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
             )
