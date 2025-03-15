@@ -14,6 +14,11 @@
   endpoint: "https://api.openai.com/v1"
   api_key_environment_variable_key: "OPENAI_API_KEY"
 
+- name: "Llama 3.1 8B"
+  parent_model_id: "@cf/meta/llama-3.1-8b-instruct"
+  endpoint: "https://api.cloudflare.com/client/v4/{cloudflare_account_id}/f978e281fed80cde859292ca4417e355/ai/v1"
+  api_key: "{cloudflare_api_key}"
+
 # Vector Embedding Model attached models
 - name: "Notes"
   parent_model_id: "gpt-4o"
