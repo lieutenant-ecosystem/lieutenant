@@ -42,6 +42,7 @@ if [ "$ENVIRONMENT" = "dev" ]; then
   sudo microk8s kubectl create secret generic database-secrets \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --dry-run=client -o yaml | sudo microk8s kubectl apply -f -
+  sudo microk8s kubectl delete -f dev/database.yml --ignore-not-found=true
   sudo microk8s kubectl apply -f dev/database.yml
 
   counter=0
@@ -67,6 +68,7 @@ sudo microk8s kubectl create secret generic lieutenant-secrets \
   --from-literal=VECTOR_EMBEDDING_API_KEY="${VECTOR_EMBEDDING_API_KEY}" \
   --from-literal=VECTOR_EMBEDDING_SERVICE_DATABASE_URL="${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}" \
   --dry-run=client -o yaml | sudo microk8s kubectl apply -f -
+sudo microk8s kubectl delete -f dev/lieutenant.yml --ignore-not-found=true
 sudo microk8s kubectl apply -f dev/lieutenant.yml
 
 ##  Gateway
@@ -75,6 +77,7 @@ sudo microk8s kubectl create secret generic gateway-secrets \
   --from-literal=SSH_USERNAME="${SSH_USERNAME}" \
   --from-literal=SSH_PUBLIC_KEY="${SSH_PUBLIC_KEY}" \
   --dry-run=client -o yaml | sudo microk8s kubectl apply -f -
+sudo microk8s kubectl delete -f dev/gateway.yml --ignore-not-found=true
 sudo microk8s kubectl apply -f dev/gateway.yml
 
 # Tail the logs
