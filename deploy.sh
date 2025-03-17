@@ -2,7 +2,9 @@
 
 # Download files
 ENVIRONMENT=${ENVIRONMENT:-main}
-sudo apt install curl -y
+if ! command -v curl &>/dev/null; then
+    sudo apt update && sudo apt install -y curl
+fi
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/lieutenant.yml
 curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/gateway.yml
 
