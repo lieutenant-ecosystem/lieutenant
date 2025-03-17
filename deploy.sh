@@ -8,7 +8,7 @@ curl -O https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/h
 
 # Install microk8s
 if ! sudo microk8s version &>/dev/null; then
-    sudo snap install sudo microk8s --classic
+    sudo snap install microk8s --classic
 fi
 sudo usermod -a -G sudo microk8s $USER
 if ! groups | grep -q "\bsudo microk8s\b"; then
