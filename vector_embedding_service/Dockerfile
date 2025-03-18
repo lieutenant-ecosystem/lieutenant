@@ -2,7 +2,7 @@
 FROM python:3.12
 ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-COPY ../app
+COPY . /app
 WORKDIR /app
 
 RUN pip install -r requirements.txt --upgrade
