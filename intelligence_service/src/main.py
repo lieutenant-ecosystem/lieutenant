@@ -15,6 +15,7 @@ from starlette.requests import Request
 
 import common
 from common import Constants
+from jira import Jira
 from models import BaseOfficer
 from officer.http_archive import HTTPArchive
 from officer.http_blob import BaseIntelligence, HTTPBlob
@@ -34,9 +35,11 @@ logger: Logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def update_intelligence(app: FastAPI) -> AsyncGenerator:
-    await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_URL.value)
+    if not common.is_test_environment():
+        return
 
-    for scheduled_task in HTTPBlob.get_scheduled_tasks() + HTTPArchive.get_scheduled_tasks():
+    await common.wait_for_connection(Constants.VECTOR_EMBEDDING_SERVICE_URL.value)
+    for scheduled_task in HTTPBlob.get_scheduled_tasks() + HTTPArchive.get_scheduled_tasks() + Jira.get_scheduled_tasks():
         scheduler.add_job(
             scheduled_task.update_func,
             trigger=CronTrigger.from_crontab(scheduled_task.update_schedule),
@@ -81,6 +84,11 @@ async def upsert_http_blob(intelligence: BaseIntelligence) -> None:
 @app.post("/http_archive", dependencies=[Depends(AuthenticateToken())])
 async def upsert_http_archive(intelligence: BaseIntelligence) -> None:
     await HTTPArchive.upsert(intelligence)
+
+
+@app.post("/jira", dependencies=[Depends(AuthenticateToken())])
+async def upsert_jira(intelligence: BaseIntelligence) -> None:
+    await Jira.upsert(intelligence)
 
 
 if __name__ == "__main__":

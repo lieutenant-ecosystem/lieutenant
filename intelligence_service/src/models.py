@@ -31,6 +31,8 @@ class BaseIntelligence(BaseModel, ABC):
 
         self.content = (f"# Source"
                         f"\n{self.source}"
+                        f"\n\n# Description"
+                        f"\n{self.description}"
                         f"\n\n# Content"
                         f"\n{self.content}")
 

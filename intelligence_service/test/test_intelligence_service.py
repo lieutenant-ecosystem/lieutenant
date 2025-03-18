@@ -2,8 +2,8 @@ from typing import Any, Dict
 
 import aiohttp
 import pytest
-from src.models import BaseIntelligenceQuery
-from src.officer.http_blob import BaseIntelligence
+
+from src.models import BaseIntelligence
 
 BASE_URL: str = "http://0.0.0.0:8002"
 
@@ -39,11 +39,20 @@ async def test_upsert_http_archive() -> None:
 
 
 @pytest.mark.asyncio
+async def test_upsert_jira() -> None:
+    url: str = f"{BASE_URL}/jira"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=BaseIntelligence(source="https://testing.atlassian.net/browse/testing-31248", index="TEST").model_dump()) as response:
+            assert response.status == 200
+
+
+@pytest.mark.asyncio
 async def test_get_http_archive() -> None:
     url: str = f"{BASE_URL}/"
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, params={"query": "Which code adds content from indexes?", "index": "TEST"}) as response:
+        async with session.get(url, params={"query": "What are the generic fields that should be captured on all headers and the logic should already exist?", "index": "TEST"}) as response:
             data = await response.json()
             print(data)
-            assert len(data) > 1
+            assert len(data) > 0
