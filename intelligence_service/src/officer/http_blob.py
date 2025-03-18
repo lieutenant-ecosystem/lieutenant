@@ -76,12 +76,5 @@ class HTTPBlob(BaseOfficer):
         if not isinstance(intelligence, BaseIntelligence):
             raise ValueError("The data is not valid: " + intelligence.model_dump_json())
 
-        content: str = await HTTPBlob._get_file_content(intelligence.source)
-        intelligence.content = (f"# Source"
-                                f"\n{intelligence.source}"
-                                f"\n\n# Description"
-                                f"\n{intelligence.description}"
-                                f"\n\n# Content"
-                                f"\n{content}")
-
+        intelligence.content = await HTTPBlob._get_file_content(intelligence.source) if intelligence.content is None else intelligence.content
         await intelligence.upsert()

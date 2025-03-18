@@ -38,3 +38,10 @@
   indexes:
     - id: "Lieutenant"
       description: "Lieutenant's Codebase"
+
+- name: "Testing's Jira"
+  parent_model_id: "gpt-4o"
+  developer_prompt: "You answer questions with respect to the context given. Keep your answers short unless asked to elaborate."
+  indexes:
+    - id: "TestingJira"
+      description: "Testing's Jira"
