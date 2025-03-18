@@ -15,10 +15,10 @@ from starlette.requests import Request
 
 import common
 from common import Constants
-from jira import Jira
-from models import BaseOfficer
+from models import BaseOfficer, BaseIntelligence
 from officer.http_archive import HTTPArchive
-from officer.http_blob import BaseIntelligence, HTTPBlob
+from officer.http_blob import HTTPBlob
+from officer.jira import Jira
 
 if os.getenv("SENTRY_DSN"):
     sentry_sdk.init(

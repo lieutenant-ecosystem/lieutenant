@@ -14,7 +14,6 @@ set -a; source .env_local; set +a
 
 # Resetting the environment
 sudo microk8s kubectl delete deployments --all
-docker images --format "{{.Repository}} {{.ID}}" | awk '$1=="sergeant-service" || $1=="vector_embedding_service || $1=="intelligence_service" {print $2}' | xargs -r docker rmi -f
 
 # Enable the registry
 sudo microk8s enable registry

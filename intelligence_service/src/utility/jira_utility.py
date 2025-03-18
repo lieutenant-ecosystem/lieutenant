@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel
 
-from utility import common_utility
+from utility.common_utility import get_raw_http_data
 
 
 def _get_headers(api_key: str) -> Dict[str, Any]:
@@ -140,13 +140,13 @@ class Issue(BaseModel):
     async def _get_all_issues_raw(jql: str, base_url: str, api_key: str) -> List[Dict[str, Any]]:
         encoded_jql: str = urllib.parse.quote(jql)
         url: str = f"{base_url}/search?jql={encoded_jql}"
-        raw_data: Dict[str, Any] = await common_utility.get_raw_http_data(url, _get_headers(api_key))
+        raw_data: Dict[str, Any] = await get_raw_http_data(url, _get_headers(api_key))
         return raw_data["issues"]
 
     @staticmethod
     async def get_from_issue_id(issue_id: str, base_url: str, api_key: str) -> "Issue":
         url: str = f"{base_url}/issue/{issue_id}"
-        raw_data: Dict[str, Any] = await common_utility.get_raw_http_data(url, _get_headers(api_key))
+        raw_data: Dict[str, Any] = await get_raw_http_data(url, _get_headers(api_key))
 
         return Issue(
             id=issue_id,
