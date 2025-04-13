@@ -1,0 +1,112 @@
+services:
+  open_webui:
+    image: ghcr.io/lieutenant-ecosystem/open_webui:${TAG}
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      OPENAI_API_BASE_URL: "http://sergeant_service:8000"
+      RAG_OPENAI_API_BASE_URL: "http://vector_embedding_service:8001"
+      DATABASE_URL: ${DATABASE_URL}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      MICROSOFT_CLIENT_TENANT_ID: ${MICROSOFT_CLIENT_TENANT_ID}
+      AUDIO_TTS_OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AUDIO_STT_OPENAI_API_KEY: ${OPENAI_API_KEY}
+      RAG_OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "80:8080"
+    networks:
+      lieutenant_network:
+        aliases:
+          - lieutenant-service
+
+  sergeant_service:
+    image: ghcr.io/lieutenant-ecosystem/sergeant_service:${TAG}
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      OPEN_WEBUI_URL: "http://open_webui:8080"
+      VECTOR_EMBEDDING_SERVICE_URL: "http://vector_embedding_service:8001"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_COMPATIBLE_API_BASE_URL: ${OPENAI_COMPATIBLE_API_BASE_URL}
+      OPENAI_COMPATIBLE_API_KEY: ${OPENAI_COMPATIBLE_API_KEY}
+      VECTOR_EMBEDDING_SERVICE_DATABASE_URL: ${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}
+      VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL: ${VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL}
+      SENTRY_DSN: ${SENTRY_DSN}
+    ports:
+      - "81:8000"
+    networks:
+      lieutenant_network:
+        aliases:
+          - lieutenant-service
+    volumes:
+      - "${SERGEANT_SERVICE_DATA_DIR}:/app/data"
+
+  vector_embedding_service:
+    image: ghcr.io/lieutenant-ecosystem/vector_embedding_service:${TAG}
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      OPEN_WEBUI_URL: "http://open_webui:8080"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_COMPATIBLE_API_KEY: ${OPENAI_COMPATIBLE_API_KEY}
+      OPENAI_COMPATIBLE_API_BASE_URL: ${OPENAI_COMPATIBLE_API_BASE_URL}
+      VECTOR_EMBEDDING_SERVICE_DATABASE_URL: ${VECTOR_EMBEDDING_SERVICE_DATABASE_URL}
+      VECTOR_EMBEDDING_BASE_URL: ${VECTOR_EMBEDDING_BASE_URL}
+      VECTOR_EMBEDDING_API_KEY: ${VECTOR_EMBEDDING_API_KEY}
+      VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL: ${VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL}
+      SENTRY_DSN: ${SENTRY_DSN}
+    ports:
+      - "82:8001"
+    networks:
+      lieutenant_network:
+        aliases:
+          - lieutenant-service
+    volumes:
+      - "${VECTOR_EMBEDDING_SERVICE_DATA_DIR}:/app/data"
+
+  intelligence_service:
+    image: ghcr.io/lieutenant-ecosystem/intelligence_service:${TAG}
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      OPEN_WEBUI_URL: "http://open_webui:8080"
+      VECTOR_EMBEDDING_SERVICE_URL: "http://vector_embedding_service:8001"
+    ports:
+      - "83:8002"
+    networks:
+      lieutenant_network:
+        aliases:
+          - lieutenant-service
+    volumes:
+      - "${INTELLIGENCE_SERVICE_DATA_DIR}:/app/data"
+
+  postgres-service:
+    image: docker.io/pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: "lieutenant-open_webui"
+      POSTGRES_USER: "lieutenant"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      lieutenant_network:
+        aliases:
+          - lieutenant-service
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "lieutenant", "-d", "lieutenant-open_webui" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  lieutenant_network:
+    driver: bridge

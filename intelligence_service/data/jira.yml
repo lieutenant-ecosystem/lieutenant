@@ -1,0 +1,8 @@
+- name: "Testing"
+  base_url: "https://test.atlassian.net/rest/api/2"
+  index: "TestingJira"
+  jql: "assignee = currentUser() AND resolution = Unresolved"
+  description: "Testing's Jira"
+  update_schedule: "0 0 1 * *"                         # https://crontab.guru/
+  update_on_start_up: true
+  api_key_environment_variable_key: "ALTASSIAN_API_KEY"

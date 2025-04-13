@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Dict, List, Coroutine, Callable
+from typing import Optional, Any, Dict, List, Callable
 
 import aiohttp
 from pydantic import BaseModel
 
-from src import common
-from src.common import Constants
+import common
+from common import Constants
 
 
 class BaseIntelligenceQuery(BaseModel):
@@ -31,6 +31,8 @@ class BaseIntelligence(BaseModel, ABC):
 
         self.content = (f"# Source"
                         f"\n{self.source}"
+                        f"\n\n# Description"
+                        f"\n{self.description}"
                         f"\n\n# Content"
                         f"\n{self.content}")
 

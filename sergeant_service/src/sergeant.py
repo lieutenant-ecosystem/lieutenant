@@ -16,8 +16,8 @@ from langchain_postgres import PGVector
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from src.common import Constants
-from src.models import ChatCompletionRequest, ChatCompletionResponse
+from common import Constants
+from models import ChatCompletionRequest, ChatCompletionResponse
 
 DEFAULT_EMBEDDING_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
 
@@ -44,12 +44,12 @@ class LLMIndexConfig(BaseModel):
 class LLMConfig(BaseModel):
     name: str
     parent_model_id: str
-    endpoint: Optional[str] = "https://api.openai.com/v1/"
+    endpoint: Optional[str]
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
     developer_prompt: str = "You are a helpful assistant."
     index_list: List[LLMIndexConfig] = []
-    api_key_environment_variable_key: Optional[str] = None
+    api_key: Optional[str] = None
 
     @staticmethod
     def get_all() -> List["LLMConfig"]:
@@ -60,12 +60,18 @@ class LLMConfig(BaseModel):
         for raw_data in raw_data_list:
             name: str = raw_data.get("name")
             parent_model_id: str = raw_data.get("parent_model_id")
-            endpoint: str = raw_data.get("endpoint") or "https://api.openai.com/v1/"
+            endpoint: str = raw_data.get("endpoint") or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1/"
             temperature: int = raw_data.get("temperature")
             max_tokens: int = raw_data.get("max_tokens")
-            api_key_environment_variable_key: str = raw_data.get("api_key_environment_variable_key")
             developer_prompt: str = raw_data.get("developer_prompt") or "You are a helpful assistant."
             index_list: List[LLMIndexConfig] = [LLMIndexConfig(**index_config) for index_config in raw_data.get("indexes")] if raw_data.get("indexes") is not None else []
+
+            if raw_data.get("api_key") is not None:
+                api_key: str = raw_data.get("api_key")
+            elif raw_data.get("api_key_environment_variable_key") is not None:
+                api_key = os.getenv(raw_data.get("api_key_environment_variable_key"))
+            else:
+                api_key = os.getenv("OPENAI_COMPATIBLE_API_KEY") or os.getenv("OPENAI_API_KEY")
 
             llm_config_list.append(LLMConfig(
                 name=name,
@@ -75,7 +81,7 @@ class LLMConfig(BaseModel):
                 max_tokens=max_tokens,
                 developer_prompt=developer_prompt,
                 index_list=index_list,
-                api_key_environment_variable_key=api_key_environment_variable_key
+                api_key=api_key
             ))
 
         return llm_config_list
@@ -101,7 +107,7 @@ class Sergeant(BaseModel):
             retriever: SelfQueryRetriever = SelfQueryRetriever.from_llm(self.model, vector_store, index.description, metadata_field_info=[], verbose=True)
             retrievers_list.append(retriever)
 
-        parent_retriever: MergerRetriever = MergerRetriever(retrievers=retrievers_list)
+        parent_retriever: MergerRetriever = MergerRetriever(retrievers=retrievers_list)  # type: ignore[arg-type]
 
         query: str = messages[-1]["content"]
         retrieved_docs: List[Document] = parent_retriever.invoke(query)
@@ -127,9 +133,9 @@ class Sergeant(BaseModel):
         return ChatOpenAI(
             model=llm_config.parent_model_id,
             temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens,
-            base_url=llm_config.endpoint or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL"),
-            api_key=os.getenv(llm_config.api_key_environment_variable_key) if llm_config.api_key_environment_variable_key else os.getenv("OPENAI_COMPATIBLE_API_KEY")
+            max_tokens=llm_config.max_tokens,  # type: ignore[call-arg]
+            base_url=llm_config.endpoint or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1",
+            api_key=llm_config.api_key  # type: ignore[arg-type]
         )
 
     @staticmethod
@@ -159,7 +165,7 @@ class Sergeant(BaseModel):
         for message in request.messages:  # type: ignore[attr-defined]
             is_developer_prompt = message.role == "system" or message.role == "developer"
             if is_developer_prompt:
-                role: str = "user" if "o1" in str(request.model).lower() or "reason" in str(request.model).lower() else "system"  # TODO: This is a known bug with o1-mini
+                role: str = "user" if "o1" in str(request.model).lower() or "reason" in str(request.model).lower() else "system"  # type: ignore[attr-defined]  # TODO: This is a known bug with o1-mini
                 content: str = f"{sergeant.developer_prompt}\n---\n{message.content}"
             else:
                 role = message.role

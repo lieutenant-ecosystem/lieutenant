@@ -9,9 +9,9 @@ from fastapi.security import HTTPBearer
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-from src import common
-from src.models import ChatCompletionRequest, ChatCompletionResponse
-from src.sergeant import Sergeant
+import common
+from models import ChatCompletionRequest, ChatCompletionResponse
+from sergeant import Sergeant
 
 start_up_time: int = int(time.time())
 

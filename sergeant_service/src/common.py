@@ -7,10 +7,9 @@ from starlette.requests import Request
 
 
 class Constants(Enum):
-    DATA_PATH = f"data/"
+    DATA_PATH = f"../data/"
     LLM_YAML_PATH = f"{DATA_PATH}llm.yml"
-    OPEN_WEBUI_PORT = "80"
-    OPEN_WEBUI_URL = f"http://lieutenant-service:{OPEN_WEBUI_PORT}"  # TODO: Change to an environmental variable
+    OPEN_WEBUI_URL = os.getenv("OPEN_WEBUI_URL")
 
 
 def is_production_environment() -> bool:

@@ -1,4 +1,3 @@
-import asyncio
 import os
 from typing import Optional, List, Any, Dict
 
@@ -9,9 +8,11 @@ from langchain_postgres import PGVector
 from pydantic import BaseModel, Field
 from sqlalchemy import make_url, create_engine, Engine, URL, text
 
-from src import common
+import common
 
 DEFAULT_MODEL: str = os.getenv("VECTOR_EMBEDDING_SERVICE_DEFAULT_MODEL") or "text-embedding-3-small"
+BASE_URL: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or os.getenv("OPENAI_COMPATIBLE_API_BASE_URL") or "https://api.openai.com/v1"
+API_KEY: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_COMPATIBLE_API_KEY") or os.getenv("OPENAI_API_KEY")
 
 
 def initialize_database() -> None:
@@ -43,7 +44,7 @@ class Embedding(BaseModel):
         )
 
         vector_store = PGVector(
-            embeddings=OpenAIEmbeddings(model=self.embedding_model),
+            embeddings=OpenAIEmbeddings(model=self.embedding_model, base_url=BASE_URL, api_key=API_KEY),
             collection_name=self.index,
             connection=os.getenv("VECTOR_EMBEDDING_SERVICE_DATABASE_URL"),
             use_jsonb=True,
@@ -78,14 +79,12 @@ class Embedding(BaseModel):
     @staticmethod
     async def get_raw_embedding(content: str, model: Optional[str] = None) -> Dict[str, Any]:
         model = DEFAULT_MODEL if model is None else model
-        url: str = os.getenv("VECTOR_EMBEDDING_BASE_URL") or "https://api.openai.com/v1/embeddings"
-        api_key: str = os.getenv("VECTOR_EMBEDDING_API_KEY") or os.getenv("OPENAI_API_KEY")
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                url,
+                f"{BASE_URL}/embeddings",
                 json={"input": content, "model": model},
-                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
             )
 
             response.raise_for_status()  # Ensure the request was successful

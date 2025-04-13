@@ -4,9 +4,9 @@ from typing import List, Any, Dict
 
 import aiohttp
 import yaml
+from common import Constants
+from models import BaseOfficer, BaseIntelligence, ScheduledTask
 from pydantic import BaseModel
-
-from src.models import BaseOfficer, BaseIntelligence, ScheduledTask
 
 logger: Logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class HTTPBlobConfig(BaseModel):
 
     @staticmethod
     def get() -> List["HTTPBlobConfig"]:
-        with open("data/http-blob.yml", "r") as raw_string:
+        with open(f"{Constants.DATA_PATH.value}http-blob.yml", "r") as raw_string:
             raw_data_list: List[Dict[str, Any]] = yaml.safe_load(raw_string)
 
         if raw_data_list is None:
@@ -42,10 +42,10 @@ class HTTPBlob(BaseOfficer):
         return data.decode("utf-8")
 
     @staticmethod
-    def get_scheduled_tasks() -> List[ScheduledTask]:  # type: ignore[override]
+    def get_scheduled_tasks() -> List[ScheduledTask]:
         scheduled_task_list: List[ScheduledTask] = []
         for http_blob_config in HTTPBlobConfig.get():
-            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)
 
             async def update() -> None:
                 logger.info(f"Updating Index on Schedule: {http_blob_config.name} | {http_blob_config.index}")
@@ -65,7 +65,7 @@ class HTTPBlob(BaseOfficer):
     async def update_on_startup() -> None:
 
         for http_blob_config in HTTPBlobConfig.get():
-            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)  # type: ignore[arg-type]
+            intelligence: BaseIntelligence = BaseIntelligence(source=http_blob_config.source, description=http_blob_config.description, index=http_blob_config.index)
             if http_blob_config.update_on_start_up:
                 logger.info(f"Updating Index on Startup: {http_blob_config.name} | {http_blob_config.index}")
                 await HTTPBlob.upsert(intelligence)
@@ -76,12 +76,5 @@ class HTTPBlob(BaseOfficer):
         if not isinstance(intelligence, BaseIntelligence):
             raise ValueError("The data is not valid: " + intelligence.model_dump_json())
 
-        content: str = await HTTPBlob._get_file_content(intelligence.source)
-        intelligence.content = (f"# Source"
-                                f"\n{intelligence.source}"
-                                f"\n\n# Description"
-                                f"\n{intelligence.description}"
-                                f"\n\n# Content"
-                                f"\n{content}")
-
+        intelligence.content = await HTTPBlob._get_file_content(intelligence.source) if intelligence.content is None else intelligence.content
         await intelligence.upsert()
