@@ -1,11 +1,13 @@
 #!/bin/bash
 
-ENVIRONMENT=${ENVIRONMENT:-main}
+if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" = "production" ]; then
+  TAG="main"
+fi
 
 if ! command -v curl &>/dev/null; then
     sudo apt update && sudo apt install -y curl
 fi
-curl -O "https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$ENVIRONMENT/infrastructure/docker/docker-compose.yml"
+curl -O "https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/heads/$TAG/infrastructure/docker/docker-compose.yml"
 
 # Install docker
 if ! sudo docker --version &>/dev/null; then
