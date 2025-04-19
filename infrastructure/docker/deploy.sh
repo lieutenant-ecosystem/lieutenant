@@ -2,7 +2,7 @@
 
 # Download the necessary files
 if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" = "production" ]; then
-  TAG="main"
+  export TAG="main"
 fi
 if ! command -v curl &>/dev/null; then
     sudo apt update && sudo apt install -y curl
