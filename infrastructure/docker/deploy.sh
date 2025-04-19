@@ -28,7 +28,10 @@ mkdir -p "$VECTOR_EMBEDDING_SERVICE_DATA_DIR"
 mkdir -p "$INTELLIGENCE_SERVICE_DATA_DIR"
 
 # Lieutenant
-if [ "$ENVIRONMENT" = "dev" ]; then
+if [ -z "$VECTOR_EMBEDDING_SERVICE_DATABASE_URL" ]; then
+  export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:=samerandominsecurepassword}
+  export DATABASE_URL=postgresql://lieutenant:samerandominsecurepassword@postgres-service:5432/lieutenant-open_webui
+  export VECTOR_EMBEDDING_SERVICE_DATABASE_URL=$DATABASE_URL
   docker compose up
 else
   docker-compose up --scale postgres-service=0   # Skips deploying the database if the environment is not a development one (remember to remove the health checks from the YAML file)
