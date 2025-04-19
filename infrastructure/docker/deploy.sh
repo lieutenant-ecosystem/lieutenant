@@ -1,9 +1,9 @@
 #!/bin/bash
 
+# Download the necessary files
 if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" = "production" ]; then
   TAG="main"
 fi
-
 if ! command -v curl &>/dev/null; then
     sudo apt update && sudo apt install -y curl
 fi
@@ -12,6 +12,8 @@ curl -O "https://raw.githubusercontent.com/lieutenant-ecosystem/lieutenant/refs/
 # Install docker
 if ! sudo docker --version &>/dev/null; then
     sudo snap install docker
+    sudo usermod -aG docker $USER
+    newgrp docker
 fi
 
 # Prepare the symlinks for data persistence
@@ -25,7 +27,6 @@ mkdir -p "$VECTOR_EMBEDDING_SERVICE_DATA_DIR"
 mkdir -p "$INTELLIGENCE_SERVICE_DATA_DIR"
 
 # Lieutenant
-export TAG=$(if [ "$ENVIRONMENT" = "main" ]; then echo "latest"; else echo "$ENVIRONMENT"; fi)
 if [ "$ENVIRONMENT" = "dev" ]; then
   docker compose up
 else
